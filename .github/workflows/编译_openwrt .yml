@@ -161,7 +161,7 @@ jobs:
       uses: xhnmt/pushplus-action@v1.0.0
       if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')
       with:
-        SCKEY: ${{ secrets.SCKEY }}
+        token: ${{ secrets.SCKEY }}
         title: "注意：${{env.CangKu}}仓库的#${{env.Run_number}}号[${{matrix.target}}]开始编译啦！"
         content: "我是一个小测试😝"
 
