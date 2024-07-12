@@ -80,7 +80,7 @@ on:
 env:
   TZ: Asia/Shanghai                      ## ←时区设置
   REPO_TOKEN: ${{ secrets.REPO_TOKEN }}  ## GitHub令牌名称（用于发布固件）
-  SCKEY: ${{ secrets.SCKEY }}            ## ServerChan微信推送
+  SCKEY: ${{ secrets.SCKEY }}            ## ServerChan微信推送             SCKEY---令牌值
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}      ## TG电报群令牌
   TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}  ## TG电报群密钥
   Author: ${{github.actor}}                              ## 提取 Github用户ID，如：zuoweiid
@@ -152,6 +152,20 @@ jobs:
         echo "UPLOAD_RELEASE=${UPLOAD_RELEASE}" >> $GITHUB_ENV                           # = 是否 将“编译好的固件” 发布到仓库中
         echo "SERVERCHAN_SCKEY=${SERVERCHAN_SCKEY}" >> $GITHUB_ENV                       # = 是否 开启微信通知的变量
         echo "CangKu=${GITURL##*${Author}/}" >> $GITHUB_ENV                              # = 提取当前项目仓库的名称 变量
+
+
+
+
+## PUSHPLUS微信推送 GitHub Action
+    - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
+      uses: xhnmt/pushplus-action@v1.0.0
+      if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')
+      with:
+        SCKEY: ${{ secrets.SCKEY }}
+        title: "注意：${{env.CangKu}}仓库的#${{env.Run_number}}号[${{matrix.target}}]开始编译啦！"
+        content: "我是一个小测试😝"
+
+
 
 
 
@@ -557,7 +571,7 @@ jobs:
         ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
         
         pwd && ls   
-        echo "(cat cowtransfer.log)"
+        cat cowtransfer.log
         
         echo "::warning file=奶牛快传（${{matrix.target}}）::$(cat cowtransfer.log | grep https)"
         echo "url=$(cat cowtransfer.log | grep https | cut -f3 -d" ")" >> $GITHUB_OUTPUT
