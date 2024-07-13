@@ -15,8 +15,8 @@ on:
   repository_dispatch:             ## 储存库_调度
   workflow_dispatch:               ## 工作流程_调度
     inputs:
-      ssh:
-        description: 'SSH远程'
+      ssh:                         ## 做判断时用的ID名称  
+        description: 'SSH远程'     ## 工作流_菜单提示框的名称
         required: false
         default: 'true-false'       ## 输入：true=开启 false=关闭
       wxtz:
@@ -38,13 +38,12 @@ on:
 #    types: started
 
 
-#  push:                            ## 编辑任意（或指定文件）触发编译
-#    branches:                      ## 编辑任意 触发编译
-#      - master                     ## 当主代码更新，触发编译
+#  push:                            ## 修改任意代码（或指定文件） 触发编译
+#    branches:                      ## 当分支代码出现“修改变动时” 触发编译
+#      - master                     ## 默认是主分支代码变动时，触发编译
 
-
-#    paths:
-#      - 'diy.config'               ## 当指定文件更新，触发编译；默认是diy.config文件
+#    paths:                         ## 当指定文件“修改变动时” 触发编译
+#      - 'diy.config'               ## 默认是diy.config文件变动时 触发编译
 
 
 #  release:                         ## release发布触发开始编译(只是一个触发条件,不会发布的,又麻烦,没卵用,不用研究)
@@ -79,10 +78,10 @@ on:
 
 env:
   TZ: Asia/Shanghai                      ## ←时区设置
-  REPO_TOKEN: ${{ secrets.REPO_TOKEN }}  ## GitHub令牌名称（用于发布固件）
-  SCKEY: ${{ secrets.SCKEY }}            ## ServerChan微信推送             SCKEY---令牌值
-  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}      ## TG电报群令牌
-  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}  ## TG电报群密钥
+  REPO_TOKEN: ${{ secrets.REPO_TOKEN }}  ## REPO_TOKEN === GitHub令牌密钥（用于发布固件）
+  SCKEY: ${{ secrets.SCKEY }}            ## SCKEY      === 推送ID密钥    （用于微信推送）
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}      ## TELEGRAM_CHAT_ID   === TG电报群令牌
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}  ## TELEGRAM_BOT_TOKEN === TG电报群密钥
   Author: ${{github.actor}}                              ## 提取 Github用户ID，如：zuoweiid
   GITURL: https://github.com/${{github.repository}}      ## 提取 项目仓库地址 = https://github.com +（用户ID + 项目仓库名字），如：zuoweiid/10
   Run_number: ${{github.run_number}}                     ## 提取 Actions当前运行编号，如#12
@@ -90,7 +89,7 @@ env:
 
 
 jobs:
-  build:
+  build:                                  ## 运行脚本的备注名称
     runs-on: Ubuntu-20.04                 ## ←选择编译系统版本
     if: github.event.repository.owner.id == github.event.sender.id   ## 只有仓库所有者才能使用  “点 Star启动编译”
     
@@ -102,16 +101,16 @@ jobs:
         target: [lede_x86]                ## ←编译指定机型 “就是文件夹名称”，多选用英文逗号隔开可以同时编译；
         # 目前可以选机型：openwrt,  lede_G-DOCK,  lede_hiwifi_HC5861,  lede_linksys_Wrt32x,  lede_N1,  lede_x86
 
-
-    
     
     steps:
     
     - name: 准备环境                      ## Checkout
-      uses: actions/checkout@v4         ##      把v2  改成 v3  测试   开始运行脚本，之前都是准备工作 加载变量值   调用别人的项目分支为：main      ## https://github.com/actions/checkout
-      # uses: actions/setup-node@v4    ## 如果不行 改成v3  并取消注释
+      uses: actions/checkout@v4           ## 加载执行仓库：https://github.com/actions/checkout
+      # uses: actions/setup-node@v4         ## 加载执行仓库，用于指定Node.js版本
       # with:
-        # node-version: 20.x
+        # node-version: 20.x                ## 指定Node.js版本为：20.x
+    
+    
     
 #-----------------------------------------------------------------------------------------------------------------
 # 单机型_配置脚本 “settings.ini”
@@ -151,26 +150,35 @@ jobs:
         echo "UPLOAD_WETRANSFER=${UPLOAD_WETRANSFER}" >> $GITHUB_ENV                     # = 是否 将“编译好的固件” 上传到“WETRANSFER网盘”的变量
         echo "UPLOAD_RELEASE=${UPLOAD_RELEASE}" >> $GITHUB_ENV                           # = 是否 将“编译好的固件” 发布到仓库中
         echo "SERVERCHAN_SCKEY=${SERVERCHAN_SCKEY}" >> $GITHUB_ENV                       # = 是否 开启微信通知的变量
+        
         echo "CangKu=${GITURL##*${Author}/}" >> $GITHUB_ENV                              # = 提取当前项目仓库的名称 变量
-
-
-
-
-## PUSHPLUS微信推送 GitHub Action
+        
+        
+        
     - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
-      uses: xhnmt/pushplus-action@v1.0.0
+      uses: xhnmt/pushplus-action@v1.0.0  ## 加载执行仓库：hhttps://github.com/xhnmt/pushplus-action
       if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')
       with:
         token: ${{ secrets.SCKEY }}
-        title: "注意：${{env.CangKu}}仓库的#${{env.Run_number}}号[${{matrix.target}}]开始编译啦！"
-        content: "我是一个小测试😝"
-
-
+        title: "${{env.CangKu}}仓库_#${{env.Run_number}}_[${{matrix.target}}]开始编译啦！"
+        content: "
+              
+              仓库名称：${{env.CangKu}}
+              
+              
+              工作流号：#${{env.Run_number}}
+              
+              
+              固件名称：${{matrix.target}}"
+              
+## https://github.com/josStorer/get-current-time            获取当前时间
+## https://github.com/marketplace/actions/pushplus-action
+## https://github.com/xhnmt/pushplus-action
 
 
 
     # - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
-      # uses: emon100/Action-Serverchan@v2  ## Action 中的Serverchan推送                 ## https://github.com/emon100/Action-Serverchan
+      # uses: emon100/Action-Serverchan@v2  ## 加载执行仓库：https://github.com/emon100/Action-Serverchan
       # if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')
       # with:
         # SCKEY: ${{ secrets.SCKEY }}
@@ -203,12 +211,10 @@ jobs:
         sudo mkdir -p /workdir                         # 根目录下新建“workdir”目录，用于下载存放源码
         sudo chown $USER:$GROUPS /workdir              # 提高“workdir”目录的权限
         sudo -E apt-get -qq install xz-utils btrfs-progs zip dosfstools uuid-runtime pigz         # N1固件打包必需要的依赖
-        # 删除 sudo -E apt-get -qq install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python2.7 python3 python3-pyelftools libpython3-dev qemu-utils rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev python3-setuptools
-        # 最后一行重复添加测试用的
         
         
-    - name: 释放 Ubuntu 磁盘空间                ## Free Disk Space (Ubuntu)                   ## GitHub Actions 释放 Ubuntu 31GB空间
-      uses: jlumbroso/free-disk-space@main             ## 加载使用别人的项目，GitHub用户：jlumbroso   项目：free-disk-space   分支：main
+    - name: 释放 Ubuntu 磁盘空间        ## Free Disk Space (Ubuntu) （预计释放31GB空间）
+      uses: jlumbroso/free-disk-space@main             ## 加载执行仓库：https://github.com/jlumbroso/free-disk-space
       with:
         tool-cache: true
         android: true
@@ -242,11 +248,13 @@ jobs:
         
         
     - name: 清理缓存                           ## Cache                                    ## 清理缓存
-      uses: klever1988/cachewrtbuild@main            ## 加载使用别人的项目；
+      uses: klever1988/cachewrtbuild@main            ## 加载执行仓库：https://github.com/stupidloud/cachewrtbuild
       with:
           ccache: 'true'
           mixkey: 'x86'
           prefix: 'openwrt'
+          
+          
           
     - name: 加载DIY_1脚本                              ## Load custom feeds
       run: |
@@ -340,12 +348,10 @@ jobs:
         # cd openwrt && rm -rf feeds/packages/lang/golang
         # git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
         
-
-
-
-
+        
+        
     - name: SSH链接（到此预计10分钟）             ## SSH connection to Actions
-      uses: P3TERX/ssh2actions@v1.0.0
+      uses: P3TERX/ssh2actions@main               ## https://github.com/P3TERX/ssh2actions
       if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
       env:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -360,15 +366,16 @@ jobs:
         
         cd openwrt                               # 因为执行工作目录在上级“workdir”，每一步必须进入openwrt源码目录
         
-        make defconfig
-        # make download -j8
-        make download -j$(nproc)
+        make defconfig                           # 自动生成.config文件
+        make download -j$(nproc)                 # 全线程下载DL库
+        
         find dl -size -1024c -exec ls -l {} \;   # 检查小于1KB文件
         find dl -size -1024c -exec rm -f {} \;   # 删除小于1KB文件
         
-        make download -j8                        # 再次执行下载DL库
-
-
+        make download -j4                        # 再次执行下载DL库
+        
+        
+        
     - name: 开始编译固件                         ## Compile the firmware
       id: compile
       run: |
@@ -381,15 +388,16 @@ jobs:
         # make -j$(($(nproc)+1)) || make -j1 || make -j1 V=s
         
         # 修改后代码
-        # echo -e "CPU线程数：$(($(nproc)+1))   进行全线程编译..."      # 显示当前CPU多少线程
-        # make -j$(nproc) V=s                                            # 全速线程进行编译
-        # make -j1 V=s                                                   # 单线程编译，用于排查；
+        echo -e "CPU线程数：$(nproc)   进行全线程编译..."           # 显示当前CPU多少线程
+        make -j$(nproc) V=s || make -j1 V=s                          # 先进行全速线程编译，如果报错再进行单线程编译排查错误！
         
+        # make -j$(nproc) V=s                                        # 全速线程进行编译
+        # make -j1 V=s                                               # 单线程编译，用于排查；
         
-        make -j$(nproc) V=s || make -j4 V=s
         
         # echo "::set-output name=status::success"         # 已经弃用
         echo "status=success" >> $GITHUB_OUTPUT             # 新代码   GitHub 输出变量
+        
         DEVICE=$(egrep -o "CONFIG_TARGET.*DEVICE.*=y" .config | sed -r 's/.*(.*)=y/\0/')            # DEVICE  = 固件机型的变量（在.config配置文件中得出）
         DEVICE2=$(egrep -o "CONFIG_TARGET.*_64_Generic=y" .config | sed -r 's/.*(.*)=y/\0/')        # DEVICE2 = 固件平台的变量（在.config配置文件中得出）如：X86、
         
@@ -410,14 +418,14 @@ jobs:
 
 
 
-    - name: 检查空间使用情况                   ## Check space usage
+    - name: 检查空间使用情况                     ## Check space usage
       if: (!cancelled())
       run: df -hT
 
 
 
     - name: 上传bin目录(打包_固件+ipk)              ## Upload bin directory
-      uses: actions/upload-artifact@v4                           ## https://github.com/actions/upload-artifact
+      uses: actions/upload-artifact@v4              ## https://github.com/actions/upload-artifact
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
       with:
         name: Bin_${{ env.NAME2 }}${{ env.NAME1 }}_${{ env.date }}     # 文件名称
@@ -425,7 +433,7 @@ jobs:
 
 
     # - name: N1云脚本打包    # 将 Armvirt 打包为 OpenWrt
-      # uses: ophub/flippy-openwrt-actions@main           # 云脚本
+      # uses: ophub/flippy-openwrt-actions@main     ## https://github.com/ophub/flippy-openwrt-actions
       # env:
         # OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*rootfs.tar.gz     # N1编译固件路径
         # PACKAGE_SOC: s905d                                    # 盒子型号，默认只是N1
@@ -541,7 +549,7 @@ jobs:
 
 
     - name: 上传.config配置文件              ## 上传到github空间
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4       ## https://github.com/actions/upload-artifact
       if: steps.organizer.outputs.status == 'success' && env.UPLOAD_CONFIG == 'true' && !cancelled()
       with:
         name: .config_${{ env.NAME2 }}${{ env.NAME1 }}
@@ -550,7 +558,7 @@ jobs:
 
 
     - name: 上传固件到github空间             ## Upload firmware directory
-      uses: actions/upload-artifact@main
+      uses: actions/upload-artifact@main     ## https://github.com/actions/upload-artifact
       if: steps.organizer.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true'
       with:
         name: firmware_${{ env.NAME2 }}${{ env.NAME1 }}_${{ env.date }}
@@ -631,15 +639,15 @@ jobs:
 
 
 
-    - name: 发布固件                             ## 自动发布固件 releases主页下载
-      uses: softprops/action-gh-release@v2            ## https://github.com/softprops/action-gh-release
+    - name: 发布固件                         ## 自动发布固件 releases主页下载
+      uses: softprops/action-gh-release@v2   ## https://github.com/softprops/action-gh-release
       if: steps.organizer.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
       with:
         name: ${{ env.date1 }} 「 ${{matrix.target}} 」固件#${{env.Run_number}}        ## 最大字号的标题
-        tag_name: ${{ env.date2 }}                     ## 左侧标签页时间
-        body: |                          ## 文本显示
+        tag_name: ${{ env.date2 }}           ## 左侧标签页时间
+        body: |                              ## 文本显示
             ☆  源码 : ${{ env.REPO_URL }}
             ☆  分支 : ${{ env.REPO_BRANCH }}
             ☆  感谢源码作者[ ${{ env.ZUOZHE }}大神 ]无私分享！
@@ -651,7 +659,7 @@ jobs:
             ⛄ WeTransfer(国外高速🚀下载)： ${{ env.WETRANSFER_URL }}
             
             🌴 链接有效期为7天，无需注册直接下载 🐤
-        files: ${{ env.FIRMWARE }}/*           ## 上传生成的所有固件
+        files: ${{ env.FIRMWARE }}/*         ## 上传生成的所有固件
 
 
 
@@ -659,9 +667,10 @@ jobs:
       uses: Mattraks/delete-workflow-runs@main        ## GitRML/delete-workflow-runs@v2 已经停更     改为： https://github.com/Mattraks/delete-workflow-runs
       with:
         token: ${{ secrets.REPO_TOKEN }}
+        repository: ${{ github.repository }}
         retain_days: 10           ## 保留天数（默认是1）
         keep_minimum_runs: 10     ## 保存最少运行数（默认是3）
-        repository: ${{ github.repository }}
+
         
         
     - name: 删除旧版本            ## Remove old Releases
