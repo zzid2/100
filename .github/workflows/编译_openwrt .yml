@@ -106,9 +106,9 @@ jobs:
     
     - name: 准备环境                      ## Checkout
       uses: actions/checkout@v4           ## 加载执行仓库：https://github.com/actions/checkout
-      uses: actions/setup-node@v4         ## 加载执行仓库，用于指定Node.js版本
-      with:
-        node-version: 20.x                ## 指定Node.js版本为：20.x
+      # uses: actions/setup-node@v4         ## 加载执行仓库，用于指定Node.js版本
+      # with:
+        # node-version: 20.x                ## 指定Node.js版本为：20.x
     
     
     
