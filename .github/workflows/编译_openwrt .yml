@@ -15,7 +15,7 @@ on:
   repository_dispatch:             ## 储存库_调度
   workflow_dispatch:               ## 工作流程_调度
     inputs:
-      ssh:                         ## 做判断时用的ID名称  
+      ssh:                         ## 做判断时用的ID名称（可更改）  
         description: 'SSH远程'     ## 工作流_菜单提示框的名称
         required: false
         default: 'true-false'       ## 输入：true=开启 false=关闭
@@ -77,7 +77,7 @@ on:
 
 
 env:
-  TZ: Asia/Shanghai                      ## ←时区设置
+  TZ: Asia/Shanghai                      ## 时区设置
   REPO_TOKEN: ${{ secrets.REPO_TOKEN }}  ## REPO_TOKEN === GitHub令牌密钥（用于发布固件）
   SCKEY: ${{ secrets.SCKEY }}            ## SCKEY      === 推送ID密钥    （用于微信推送）
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}      ## TELEGRAM_CHAT_ID   === TG电报群令牌
@@ -89,7 +89,7 @@ env:
 
 
 jobs:
-  build:                                  ## 运行脚本的备注名称
+  build:                                  ## 运行脚本的备注名称（可更改）
     runs-on: Ubuntu-20.04                 ## ←选择编译系统版本
     if: github.event.repository.owner.id == github.event.sender.id   ## 只有仓库所有者才能使用  “点 Star启动编译”
     
@@ -160,7 +160,7 @@ jobs:
       if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')
       with:
         token: ${{ secrets.SCKEY }}
-        title: "${{env.CangKu}}仓库_#${{env.Run_number}}_[${{matrix.target}}]开始编译啦！"
+        title: "编译[${{matrix.target}}]_${{env.CangKu}}仓库_#${{env.Run_number}}"
         content: "
               
               仓库名称：${{env.CangKu}}
@@ -169,7 +169,12 @@ jobs:
               工作流号：#${{env.Run_number}}
               
               
-              固件名称：${{matrix.target}}"
+              固件名称：${{matrix.target}}
+              
+              
+              触发时间：${{ env.date1 }}"
+              
+              
               
 ## https://github.com/josStorer/get-current-time            获取当前时间
 ## https://github.com/marketplace/actions/pushplus-action
@@ -359,6 +364,14 @@ jobs:
         
         
         
+    - name: SSH上传.config配置文件              ## 上传到github空间
+      uses: actions/upload-artifact@v4       ## https://github.com/actions/upload-artifact
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+      with:
+        name: SSH.config
+        path: ./config
+        
+        
     - name: 下载DL库                             ## Download package
       id: package
       run: |
@@ -382,17 +395,9 @@ jobs:
         pwd && ls                                # 显示当前步骤的路径和所有文件和文件夹；
         
         cd openwrt                               # 因为执行工作目录在上级“workdir”，每一步必须进入openwrt源码目录
-        
-        # 修改前代码
-        # echo -e "$(($(nproc)+1)) thread compile"                   # 显示当前CPU多少线程
-        # make -j$(($(nproc)+1)) || make -j1 || make -j1 V=s
-        
-        # 修改后代码
-        echo -e "CPU线程数：$(nproc)   进行全线程编译..."           # 显示当前CPU多少线程
+                
+        echo -e "CPU线程数：$(nproc)   进行全线程编译..."           # 显示当前CPU多少线程；命令二：echo -e "$(($(nproc)+1)) 线程编译"
         make -j$(nproc) V=s || make -j1 V=s                          # 先进行全速线程编译，如果报错再进行单线程编译排查错误！
-        
-        # make -j$(nproc) V=s                                        # 全速线程进行编译
-        # make -j1 V=s                                               # 单线程编译，用于排查；
         
         
         # echo "::set-output name=status::success"         # 已经弃用
@@ -496,25 +501,7 @@ jobs:
             
         fi
         
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+        
         # echo "::set-output name=status::success"   # 被弃用
         echo "status=success" >>$GITHUB_OUTPUT       #  新命令  GitHub 结果输出变量
 
@@ -562,7 +549,7 @@ jobs:
       if: steps.organizer.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true'
       with:
         name: firmware_${{ env.NAME2 }}${{ env.NAME1 }}_${{ env.date }}
-        path: ${{ env.FIRMWARE }}            ## 上传生成的所有固件
+        path: ${{ env.FIRMWARE }}            ## 上传编译后列表中的固件
 
 
 
