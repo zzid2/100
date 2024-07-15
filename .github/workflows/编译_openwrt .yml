@@ -151,6 +151,7 @@ jobs:
         echo "UPLOAD_RELEASE=${UPLOAD_RELEASE}" >> $GITHUB_ENV                           # = 是否 将“编译好的固件” 发布到仓库中
         echo "SERVERCHAN_SCKEY=${SERVERCHAN_SCKEY}" >> $GITHUB_ENV                       # = 是否 开启微信通知的变量
         
+        ## 时间的变量
         echo "CangKu=${GITURL##*${Author}/}" >> $GITHUB_ENV                              # = 提取当前项目仓库的名称 变量
         
         
