@@ -364,7 +364,7 @@ jobs:
         
         
         
-    - name: SSH上传.config配置文件              ## 上传到github空间
+    - name: 上传SSH自定义.config配置文件              ## 上传到github空间
       uses: actions/upload-artifact@v4       ## https://github.com/actions/upload-artifact
       if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
       with:
