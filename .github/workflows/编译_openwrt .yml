@@ -155,7 +155,6 @@ jobs:
         echo "CangKu=${GITURL##*${Author}/}" >> $GITHUB_ENV                              # = 提取当前项目仓库的名称 变量
         
         
-        
     - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
       uses: xhnmt/pushplus-action@v1.0.0  ## 加载执行仓库：hhttps://github.com/xhnmt/pushplus-action
       if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')
@@ -340,8 +339,6 @@ jobs:
          echo "NAME2=Official_" >> $GITHUB_ENV
         fi
         
-        
-
 #-----------------------------------------------------------------------------------------------------------------
     # - name: Apply patches #patch补丁
       # run: |
@@ -381,12 +378,12 @@ jobs:
         cd openwrt                               # 因为执行工作目录在上级“workdir”，每一步必须进入openwrt源码目录
         
         make defconfig                           # 自动生成.config文件
-        make download -j$(nproc)                 # 全线程下载DL库
+        make -j$(nproc) download V=s             # 全线程下载DL库
         
         find dl -size -1024c -exec ls -l {} \;   # 检查小于1KB文件
         find dl -size -1024c -exec rm -f {} \;   # 删除小于1KB文件
         
-        make download -j4                        # 再次执行下载DL库
+        make -j4 download V=s                    # 再次执行下载DL库
         
         
         

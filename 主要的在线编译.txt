@@ -1,0 +1,4 @@
+        git clone https://github.com/openwrt-dev/po2lmo.git                  # 下载po2lmo依赖
+        pushd po2lmo
+        make && sudo make install
+        popd
