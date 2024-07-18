@@ -2,3 +2,39 @@
         pushd po2lmo
         make && sudo make install
         popd
+
+
+        # if [ ${{matrix.target}} != openwrt ]; then                                    # 当编译“openwrt”纯净机型时，先删除这些文件夹
+          # rm -rf package/lienol/luci-app-timecontrol
+          # rm -rf package/ntlf9t/{smartdns,luci-app-smartdns}
+          # rm -rf package/ctcgfw/{luci-app-argon-config,luci-theme-argonv3}
+          # rm -rf package/lean/{luci-app-netdata,luci-theme-argon,k3screenctrl}
+        # fi
+        
+        #if [ ${{matrix.target}} == "lede_N1" -o ${{matrix.target}} == "Project_N1" ];then           # 当编译 N1机型时_下载在线打包依赖（目前已经删库）
+        #  git clone https://github.com/tuanqing/mknop reform
+        #fi
+        
+        # https://github.com/unifreq/openwrt_packit    # N1打包源码，未测试   https://github.com/wxfyes/N1packaging/releases
+        
+
+
+        # if [ ${{matrix.target}} != "openwrt" ]; then                       # 当编译“openwrt”纯净机型时，下载openwrt-package插件包
+          # git clone -b $REPO_BRANCH --single-branch https://github.com/281677160/openwrt-package package/danshui
+        # fi
+        
+
+
+#-----------------------------------------------------------------------------------------------------------------
+    # - name: Apply patches #patch补丁
+      # run: |
+        # cd openwrt
+        # find "devices/common/patches" -type f ! -path 'devices/common/patches/china_mirrors.patch' -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 -E --forward --no-backup-if-mismatch"
+#-----------------------------------------------------------------------------------------------------------------
+
+    # - name: 升级 Go版本
+      # run: |
+        # cd openwrt && rm -rf feeds/packages/lang/golang
+        # git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
+        
+        

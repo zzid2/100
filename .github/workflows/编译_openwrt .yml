@@ -153,7 +153,7 @@ jobs:
         
         ## 时间的变量
         echo "CangKu=${GITURL##*${Author}/}" >> $GITHUB_ENV                              # = 提取当前项目仓库的名称 变量
-        
+        echo "wx_date1=$(date "+%Y年%m月%d号-%H点%M分")" >> $GITHUB_ENV                 # = wx_date1 变量时间格式: 2021年01月02号-13点10分
         
     - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
       uses: xhnmt/pushplus-action@v1.0.0  ## 加载执行仓库：hhttps://github.com/xhnmt/pushplus-action
@@ -172,7 +172,7 @@ jobs:
               固件名称：${{matrix.target}}
               
               
-              触发时间：${{ env.date1 }}"
+              触发时间：${{ env.wx_date1 }}"
               
               
               
@@ -239,13 +239,6 @@ jobs:
         
         cd openwrt                                                                      # 首次进入源码 的执行目录“openwrt”
         
-        # if [ ${{matrix.target}} != openwrt ]; then                                    # 当编译“openwrt”纯净机型时，先删除这些文件夹
-          # rm -rf package/lienol/luci-app-timecontrol
-          # rm -rf package/ntlf9t/{smartdns,luci-app-smartdns}
-          # rm -rf package/ctcgfw/{luci-app-argon-config,luci-theme-argonv3}
-          # rm -rf package/lean/{luci-app-netdata,luci-theme-argon,k3screenctrl}
-        # fi
-        
         rm -rf {LICENSE,README,README.md}
         rm -rf ./*/{LICENSE,README,README.md}
         rm -rf ./*/*/{LICENSE,README,README.md}    # 删除无用说明
@@ -265,13 +258,6 @@ jobs:
       run: |
         pwd && ls                                      # 显示当前步骤的路径和所有文件和文件夹；
         
-        #if [ ${{matrix.target}} == "lede_N1" -o ${{matrix.target}} == "Project_N1" ];then           # 当编译 N1机型时_下载在线打包依赖（目前已经删库）
-        #  git clone https://github.com/tuanqing/mknop reform
-        #fi
-        
-        
-        # https://github.com/unifreq/openwrt_packit    # N1打包源码，未测试   https://github.com/wxfyes/N1packaging/releases
-        
         
         cp -Rf `find ./ -maxdepth 1 -type d ! -path './openwrt' ! -path './'` openwrt               # 复制当前 build “等所有文件” 至 openwrt目录下                                 复制当前 “编译机型” 内的所有DIY文件 至openwrt目录下
         cd openwrt                                                                                  # 再次进入源码 的执行目录“openwrt”
@@ -281,15 +267,6 @@ jobs:
           /bin/bash "build/${{matrix.target}}/$DIY_P1_SH"
         fi
         
-        
-        
-        
-        
-        # if [ ${{matrix.target}} != "openwrt" ]; then                       # 当编译“openwrt”纯净机型时，下载openwrt-package插件包
-          # git clone -b $REPO_BRANCH --single-branch https://github.com/281677160/openwrt-package package/danshui
-        # fi
-        
-
         
         
 # #修复mt76无线驱动程序
@@ -339,19 +316,6 @@ jobs:
          echo "NAME2=Official_" >> $GITHUB_ENV
         fi
         
-#-----------------------------------------------------------------------------------------------------------------
-    # - name: Apply patches #patch补丁
-      # run: |
-        # cd openwrt
-        # find "devices/common/patches" -type f ! -path 'devices/common/patches/china_mirrors.patch' -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 -E --forward --no-backup-if-mismatch"
-#-----------------------------------------------------------------------------------------------------------------
-
-    # - name: 升级 Go版本
-      # run: |
-        # cd openwrt && rm -rf feeds/packages/lang/golang
-        # git clone https://github.com/sbwml/packages_lang_golang -b 22.x feeds/packages/lang/golang
-        
-        
         
     - name: SSH链接（到此预计10分钟）             ## SSH connection to Actions
       uses: P3TERX/ssh2actions@main               ## https://github.com/P3TERX/ssh2actions
@@ -378,12 +342,12 @@ jobs:
         cd openwrt                               # 因为执行工作目录在上级“workdir”，每一步必须进入openwrt源码目录
         
         make defconfig                           # 自动生成.config文件
-        make -j$(nproc) download V=s             # 全线程下载DL库
+        make -j$(($(nproc)+1)) download V=s      # 全线程下载DL库
         
         find dl -size -1024c -exec ls -l {} \;   # 检查小于1KB文件
         find dl -size -1024c -exec rm -f {} \;   # 删除小于1KB文件
         
-        make -j4 download V=s                    # 再次执行下载DL库
+        make -j1 download V=s                    # 再次执行下载DL库
         
         
         
@@ -394,8 +358,8 @@ jobs:
         
         cd openwrt                               # 因为执行工作目录在上级“workdir”，每一步必须进入openwrt源码目录
                 
-        echo -e "CPU线程数：$(nproc)   进行全线程编译..."           # 显示当前CPU多少线程；命令二：echo -e "$(($(nproc)+1)) 线程编译"
-        make -j$(nproc) V=s || make -j1 V=s                          # 先进行全速线程编译，如果报错再进行单线程编译排查错误！
+        echo -e "CPU线程数：$(($(nproc)+1))   进行全线程编译..."    # 显示当前CPU多少线程；命令二：echo -e "$(($(nproc)+1)) 线程编译"
+        make -j$(($(nproc)+1)) V=s || make -j1 V=s                    # 先进行全速线程编译，如果报错再进行单线程编译排查错误！
         
         
         # echo "::set-output name=status::success"         # 已经弃用
@@ -509,7 +473,7 @@ jobs:
         pwd && ls                              # 显示当前步骤的路径和所有文件和文件夹；
         
         mkdir config                                                                                  # 创建config文件夹
-        find openwrt/bin/targets/ -name "*config.buildinfo*" | xargs -i mv -f {} config               # 寻找“config.buildinfo”文件移动并改名为"config"
+        find openwrt/bin/targets/ -name "*config.buildinfo*" | xargs -i mv -f {} config               # 寻找“config.buildinfo”文件移动并改名为"config" （-f =强制移动或重命名）
         
         if [ -n "$(ls -A "openwrt/bin/targets/x86" 2>/dev/null)" ]; then                              # 寻找“kernel”文件 并移动至targets目录内
          find openwrt/bin/targets/x86/* -name "*kernel*" | xargs -i mv -f {} openwrt/bin/targets
