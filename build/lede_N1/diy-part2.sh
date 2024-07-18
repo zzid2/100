@@ -1,52 +1,100 @@
 #!/bin/bash
-#
-# 说明：OpenWrt DIY脚本第2部分（更新提要之后）
-# 如果额外添加的软件包与 Open­Wrt 源码中已有的软件包同名的情况，则需要把 Open­Wrt #源码中的同名软件包删除，否则会优先编译 Open­Wrt 中的软件包。这同样可以利用到的 DIY 脚本，相关指令应写在diy-part2.sh
-#
+lede_path=$(pwd)                      ## 目录变量=Lede源码目录；用于githun编译命令
+cd $lede_path
 
-# 修改默认IP：192.168.1.1
-sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
+# 字体颜色配置
+print_error() {                           ## 打印红色字体
+    echo -e "\033[31m$1\033[0m"
+}
 
-# 设置密码为空（登陆时无需输入密码）
+print_green() {                           ## 打印绿色字体
+    echo -e "\033[32m$1\033[0m"
+}
+
+print_yellow() {                          ## 打印黄色字体
+    echo -e "\033[33m$1\033[0m"
+}
+
+
+print_yellow "正在执行diy-part2.sh脚本......"
+# 修改默认IP为192.168.10.1
+sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate 
+
+# 修改 root密码登录为空
 sed -i 's@.*CYXluq4wUazHjmCDBCqXF*@#&@g' package/lean/default-settings/files/zzz-default-settings
 
-# 修改主机名：“OpenWrt_x86” 修改成你喜欢的就行（不能纯数字或者中文）
-sed -i '/uci commit system/i\uci set system.@system[0].hostname='N1'' package/lean/default-settings/files/zzz-default-settings
+# 修改主机名
+sed -i '/uci commit system/i\uci set system.@system[0].hostname='OpenWrt_x86'' package/lean/default-settings/files/zzz-default-settings
 
-# 固件版本_自定义署名：LEDE build $(TZ=UTC-8 date "+%Y.%m.%d") 显示范例： LEDE build 2021.02.08 @ 说明：【LEDE=作者 + build=建造 + （UTC-8=字符编码 + date=时间格式）】
+# 修改固件版本号
 sed -i "s/OpenWrt /LEDE build $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" package/lean/default-settings/files/zzz-default-settings
 
-# 修改 Argon 为默认主题,可根据你喜欢的修改成其他的（不选择那些会自动改变为默认主题的主题才有效果）
+# 修改 默认主题
 sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
+# sed -i '/set luci.main.mediaurlbase=\/luci-static\/bootstrap/d' feeds/luci/themes/luci-theme-bootstrap/root/etc/uci-defaults/30_luci-theme-bootstrap   # 删除代码：set luci.main.mediaurlbase=/luci-static/bootstrap
+# sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile   # 取掉默认主题
 
-# 修改wifi名称
-sed -i 's/OpenWrt/N1/g' package/kernel/mac80211/files/lib/wifi/mac80211.sh
 
-# 修复核心及添加温度显示
-# sed -i 's|pcdata(boardinfo.system or "?")|luci.sys.exec("uname -m") or "?"|g' feeds/luci/modules/luci-mod-admin-full/luasrc/view/admin_status/index.htm
+
+
+# echo '修改机器名称'   （无效果）
+# sed -i 's/OpenWrt/G-DOCK/g' package/base-files/files/bin/config_generate   # 把默认 OpenWrt 修改为：G-DOCK
+
+# echo '修改时区'
+# sed -i "s/'UTC'/'CST-8'\n          set system.@system[-1].zonename='Asia\/Shanghai'/g" package/base-files/files/bin/config_generate   # 把 UTC 时区改为：CST-8  并添加一行 'Asia\/Shanghai'
+
+
+# echo '集成diy目录'
+# ln -s ../../diy ./package/openwrt-packages
+
+
+# cpufreq # CPU性能调节
+# git clone https://github.com/openwrt-xiaomi/luci-app-cpufreq package/lean/luci-app-cpufreq    # 下载源码
+# sed -i 's/LUCI_DEPENDS.*/LUCI_DEPENDS:=\@\(arm\|\|aarch64\)/g' package/lean/luci-app-cpufreq/Makefile
+# sed -i 's/services/system/g' package/lean/luci-app-cpufreq/luasrc/controller/cpufreq.lua   # 把默认 services 修改为：system
+
+# 修改vssr的makefile
+# find package/*/ feeds/*/ -maxdepth 2 -path "*luci-app-vssr/Makefile" | xargs -i sed -i 's/shadowsocksr-libev-alt/shadowsocksr-libev-ssr-redir/g' {}
+# find package/*/ feeds/*/ -maxdepth 2 -path "*luci-app-vssr/Makefile" | xargs -i sed -i 's/shadowsocksr-libev-server/shadowsocksr-libev-ssr-server/g' {}
+
+
+
+
+# 添加温度显示(By YYiiEt)   # 在703行  or "1"%>   后面添加代码；
 # sed -i 's/or "1"%>/or "1"%> ( <%=luci.sys.exec("expr `cat \/sys\/class\/thermal\/thermal_zone0\/temp` \/ 1000") or "?"%> \&#8451; ) /g' feeds/luci/modules/luci-mod-admin-full/luasrc/view/admin_status/index.htm
 
-# 增加带WiFi驱动，emmc写入和NTFS格式优盘挂载
-
-# packages=" \
-# brcmfmac-firmware-43430-sdio brcmfmac-firmware-43455-sdio kmod-brcmfmac wpad acl attr kmod-usb-hid kmod-mmc-spi \
-# kmod-sdhci dumpe2fs e2freefrag f2fs-tools fuse-utils lsattr mkhfs nfs-utils nfs-utils-libs squashfs-tools-mksquashfs \
-# squashfs-tools-unsquashfs swap-utils bash kmod-fs-ext4 kmod-fs-vfat kmod-fs-exfat dosfstools e2fsprogs ntfs-3g-utils \
-# badblocks usbutils kmod-usb-ohci-pci kmod-usb-uhci kmod-usb2-pci kmod-usb3 kmod-usb-storage-extras kmod-usb-storage-uas \
-# kmod-usb-net kmod-usb-net-asix-ax88179 kmod-usb-net-rtl8150 kmod-usb-net-rtl8152 autocore-arm \
-# blkid lsblk parted fdisk cfdisk losetup tar gawk getopt perl perlbase-utf8 resize2fs tune2fs pv unzip \
-# lscpu htop iperf3 curl lm-sensors install-program
-# "
-# sed -i '/FEATURES+=/ { s/cpiogz //; s/ext4 //; s/ramdisk //; s/squashfs //; }' \
-    # target/linux/armvirt/Makefile
-# for x in $packages; do
-    # sed -i "/DEFAULT_PACKAGES/ s/$/ $x/" target/linux/armvirt/Makefile
-# done
+# 修改固件生成名字,增加当天日期(by:左右）
+# sed -i 's/IMG_PREFIX:=$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=Draco-china-$(shell date +%Y%m%d)-$(VERSION_DIST_SANITIZED)/g' include/image.mk
 
 
-# rm -f package/lean/shadowsocksr-libev/patches/0002-Revert-verify_simple-and-auth_simple.patch
-# sed -i '383,393 d' package/lean/shadowsocksr-libev/patches/0001-Add-ss-server-and-ss-check.patch
-# sed -i 's/PKG_RELEASE:=5/PKG_RELEASE:=6/' package/lean/shadowsocksr-libev/Makefile
-# sed -i '/PKG_SOURCE_VERSION:=/d' package/lean/shadowsocksr-libev/Makefile
-# sed -i '/PKG_SOURCE_URL/a PKG_SOURCE_VERSION:=4799b312b8244ec067b8ae9ba4b85c877858976c' \
-    # package/lean/shadowsocksr-libev/Makefile
+# 修改版本号
+# sed -i 's/V2020/V$(date "+%Y.%m.%d")/g' package/lean/default-settings/files/zzz-default-settings
+
+# 切换
+# sed -i 's/Lean/Snapshot/g' package/base-files/files/etc/banner
+
+# 修改版本号
+# sed -i 's/V2020/V${{ env.DATE }}/g' package/base-files/files/etc/banner
+
+
+
+
+# ----------------------我是分界线------------------------
+# --------------------以下是非必须部分--------------------
+
+
+
+
+
+
+# 修改插件名字（修改名字后不知道会不会对插件功能有影响，自己多测试）
+sed -i 's/"管理权"/"改密码"/g' feeds/luci/modules/luci-base/po/zh-cn/base.po
+
+sed -i 's/"KMS 服务器"/"KMS激活"/g' feeds/luci/applications/luci-app-vlmcsd/po/zh-cn/vlmcsd.po
+# sed -i 's/"Turbo ACC 网络加速"/"Turbo ACC 网络加速"/g' feeds/luci/applications/luci-app-turboacc/po/zh-cn/turboacc.po   # 把默认 Turbo ACC 网络加速  修改为：网络加速
+# sed -i 's/cbi("qbittorrent"), _("qBittorrent"), 20/cbi("qbittorrent"), _("BT下载"), 20/g' package/otherapp/luci-app-qbittorrent/luasrc/controller/qbittorrent.lua    # 把第二个 qbittorrent   修改为：BT下载
+
+
+
+
+
