@@ -153,21 +153,21 @@ jobs:
         
         ## 时间的变量
         echo "CangKu=${GITURL##*${Author}/}" >> $GITHUB_ENV                              # = 项目仓库名称的变量
-        echo "date=$(date "+%Y.%m.%d-%H%M")" >> $GITHUB_ENV                              # = date 变量时间格式: 2021.01.02-1310
-        echo "date1=$(date "+%Y年%m月%d号-%H点%M分")" >> $GITHUB_ENV                     # = date1 变量时间格式: 2021年01月02号-13点10分 （Releases主页显示）
-        echo "date2=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_ENV                              # = date2 变量时间格式：2021.01.02-1310（与FILE_DATE对等）Tags显示
+        echo "date=$(date "+%Y.%m.%d-%H%M")" >> $GITHUB_ENV                              # = date 变量时间格式: 2021.01.02-1310           （上传至github空间的名称）
+        echo "date1=$(date "+%Y年%m月%d号-%H点%M分")" >> $GITHUB_ENV                    # = date1 变量时间格式: 2021年01月02号-13点10分 （Releases主页发布固件名称）
+        echo "date2=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_ENV                             # = date2 变量时间格式：2021.01.02-1310         （Tags左侧标签时间名称，与FILE_DATE对等）Tags显示
         
         ## 源码的变量
-        if [ $REPO_URL == "https://github.com/coolsnowwolf/lede" ]; then                           # 当使用Lede源码时    变量：NAME2=Lede   ZUOZHE=lean
+        if [ $REPO_URL == "https://github.com/coolsnowwolf/lede" ]; then                 # 当使用Lede源码时      变量：NAME2=Lede   ZUOZHE=lean
          echo "NAME2=Lede_" >> $GITHUB_ENV
          echo "ZUOZHE=lean" >> $GITHUB_ENV
-        elif [ $REPO_URL == "https://github.com/Lienol/openwrt" ]; then                            # 当使用Lienol源码时  变量：NAME2=Lienol   ZUOZHE=lienol
+        elif [ $REPO_URL == "https://github.com/Lienol/openwrt" ]; then                  # 当使用Lienol源码时    变量：NAME2=Lienol   ZUOZHE=lienol
          echo "NAME2=Lienol_" >> $GITHUB_ENV
          echo "ZUOZHE=lienol" >> $GITHUB_ENV
-        elif [ $REPO_URL == "https://github.com/project-openwrt/openwrt" ]; then                   # 当使用Project源码时 变量：NAME2=Project   ZUOZHE=CTCGFW
+        elif [ $REPO_URL == "https://github.com/project-openwrt/openwrt" ]; then         # 当使用Project源码时   变量：NAME2=Project   ZUOZHE=CTCGFW
          echo "NAME2=Project_" >> $GITHUB_ENV
          echo "ZUOZHE=CTCGFW" >> $GITHUB_ENV
-        elif [ $REPO_URL == "https://github.com/openwrt/openwrt" ]; then                           # 当使用官方源码时 变量：NAME2=Official
+        elif [ $REPO_URL == "https://github.com/openwrt/openwrt" ]; then                 # 当使用官方源码时      变量：NAME2=Official
          echo "NAME2=Official_" >> $GITHUB_ENV
         fi
         
@@ -175,7 +175,7 @@ jobs:
         
     - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
       uses: xhnmt/pushplus-action@v1.0.0  ## 加载执行仓库：hhttps://github.com/xhnmt/pushplus-action
-      if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')
+      if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')      ## 判断 SERVERCHAN_SCKEY 变量为“开启”则运行，否则跳过；继续判断 工作流调度菜单为 wxtz 时“开启”运行，否则跳过；
       with:
         token: ${{ secrets.SCKEY }}
         title: "编译[${{matrix.target}}]_${{env.CangKu}}仓库_#${{env.Run_number}}"
@@ -230,8 +230,8 @@ jobs:
         sudo -E apt-get -qq install -y build-essential asciidoc binutils bzip2 gawk gettext git libc6-dev libncurses5 libtinfo-dev libtinfo5 ncurses-doc libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
         sudo -E apt-get -qq autoremove -y --purge
         sudo -E apt-get -qq clean -y
-        sudo timedatectl set-timezone "$TZ"
-        sudo mkdir -p /workdir                         # 根目录下新建“workdir”目录，用于下载存放源码
+        sudo timedatectl set-timezone "$TZ"            # 设置时区
+        sudo mkdir -p /workdir                         # 在根目录下 新创建“workdir”目录，用于备份 openwrt 源码；
         sudo chown $USER:$GROUPS /workdir              # 提高“workdir”目录的权限
         sudo -E apt-get -qq install xz-utils btrfs-progs zip dosfstools uuid-runtime pigz         # N1固件打包必需要的依赖
         
@@ -250,15 +250,18 @@ jobs:
         
         
     - name: 下载${{matrix.target}}源码                 ## Clone source code
-      working-directory: /workdir                      ## 源码指定下载到根目录下新建的“workdir”目录，
+      working-directory: /workdir                      ## 指定 执行工作目录为新创建的“workdir”目录，Lede源码也存放在此下 /workdir/openwrt
       run: |
         pwd && ls                                                     # 显示当前步骤的路径和所有文件和文件夹；
         
         df -hT $PWD                                                   # 显示当前磁盘使用情况
-        git clone $REPO_URL -b $REPO_BRANCH openwrt                   # 下载源码，并改为默认目录“openwrt”
-        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt             # /根目录下workdir/openwrt目录强制建立软连接到  主仓库目录下 openwrt 目录；
+        ## 翻译：  Size（总大小），Used（已用），Avail（可用），Use%（已使用百分比）
+        ## 清理后   73G              21G            52G            29%
         
-        cd openwrt                                                                      # 首次进入源码 的执行目录“openwrt”
+        git clone $REPO_URL -b $REPO_BRANCH openwrt                   # 下载源码，文件夹目录改为“openwrt”
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt             # 下载源码目录 /workdir/openwrt 强制建立软连接到 主仓库目录下 home/runner/work/仓库名称/仓库名称/openwrt 目录；
+        
+        cd openwrt                                                                      # 首次进入”软连接“源码 的执行目录“openwrt”
         
         rm -rf {LICENSE,README,README.md}
         rm -rf ./*/{LICENSE,README,README.md}
@@ -278,10 +281,9 @@ jobs:
     - name: 加载DIY_1脚本                              ## Load custom feeds
       run: |
         pwd && ls                                      # 显示当前步骤的路径和所有文件和文件夹；
-        
-        
-        cp -Rf `find ./ -maxdepth 1 -type d ! -path './openwrt' ! -path './'` openwrt               # 复制当前 build “等所有文件” 至 openwrt目录下                                 复制当前 “编译机型” 内的所有DIY文件 至openwrt目录下
-        cd openwrt                                                                                  # 再次进入源码 的执行目录“openwrt”
+                
+        cp -Rf `find ./ -maxdepth 1 -type d ! -path './openwrt' ! -path './'` openwrt               # 复制当前 build “等所有文件（包含机型内所有DIY文件）” 至 openwrt目录下，
+        cd openwrt                                                                                  # 后续执行命令默认进入：“openwrt”源码目录
         
         if [ -f "build/${{matrix.target}}/$DIY_P1_SH" ]; then                # 执行DIY_1脚本！！！
           chmod +x build/${{matrix.target}}/$DIY_P1_SH
@@ -294,7 +296,7 @@ jobs:
       run: |
         pwd && ls                            # 显示当前步骤的路径和所有文件和文件夹；
         
-        cd openwrt                           # 因为执行工作目录在上级“workdir”，每一步必须进入openwrt源码目录
+        cd openwrt                           # 进入“openwrt”源码目录
         
         if [ -f "build/${{matrix.target}}/$DIY_P2_SH" ]; then                                      # 执行DIY_2脚本
           chmod +x build/${{matrix.target}}/$DIY_P2_SH
@@ -344,7 +346,7 @@ jobs:
       run: |
         pwd && ls                                # 显示当前步骤的路径和所有文件和文件夹；
         
-        cd openwrt                               # 因为执行工作目录在上级“workdir”，每一步必须进入openwrt源码目录
+        cd openwrt                               # 进入“openwrt”源码目录
         
         make defconfig                           # 自动生成.config文件
         make -j$(($(nproc)+1)) download V=s      # 全线程下载DL库
@@ -361,13 +363,13 @@ jobs:
       run: |
         pwd && ls                                # 显示当前步骤的路径和所有文件和文件夹；
         
-        cd openwrt                               # 因为执行工作目录在上级“workdir”，每一步必须进入openwrt源码目录
+        cd openwrt                               # 进入“openwrt”源码目录
                 
-        echo -e "CPU线程数：$(($(nproc)+1))   进行全线程编译..."    # 显示当前CPU多少线程；命令二：echo -e "$(($(nproc)+1)) 线程编译"
-        make -j$(($(nproc)+1)) V=s || make -j1 V=s                    # 先进行全速线程编译，如果报错再进行单线程编译排查错误！
+        echo -e "CPU线程数：$(($(nproc)+1))   进行全线程编译..."     # 显示当前CPU线程数
+        make -j$(($(nproc)+1)) V=s || make -j1 V=s                    # 首选全速线程编译，如果报错 再进行单线程编译排查错误！
         
         
-        echo "status=success" >> $GITHUB_OUTPUT             # 假如状态反馈成功，则输出到变量
+        echo "status=success" >> $GITHUB_OUTPUT                       # 假如状态反馈成功，则输出到变量
         
         
         
@@ -418,6 +420,8 @@ jobs:
       run: |
         pwd && ls                                               # 显示当前步骤的路径和所有文件和文件夹；
         
+        
+        ## 已删库
         # if [ ${{matrix.target}} == "lede_N1" -o ${{matrix.target}} == "Project_N1" ];then             # 当编译N1机型目录时，复制N1固件到打包目录下，
          # cp openwrt/bin/targets/armvirt/*/*.tar.gz reform/openwrt                                     # 复制要打包的文件至 reform/openwrt 目录内
         
@@ -443,32 +447,53 @@ jobs:
         
         
         if [ ${{matrix.target}} == "lede_N1" -o ${{matrix.target}} == "Project_N1" ];then
-            git clone https://github.com/wxfyes/N1packaging.git N1opt                                 # 下载N1打包源码
-            sudo chmod  -R 777 /opt                  ## 根目录下的opt目录 提权777
-            find N1opt/70+o/opt/* -name "*kernel*" | xargs -i cp -r {} /opt                                  ## 搜索含有“kernel”名称的核心文件并复制至 根目录下的/opt目录内
-            cp -r openwrt/bin/targets/*/*/*.tar.gz /opt/kernel/openwrt-armvirt-64-default-rootfs.tar.gz      ## 复制N1固件至根目录下的/opt/kernel目录内 并重命名为openwrt-armvirt-64-default-rootfs.tar.gz
-            cd /opt/kernel
-            sudo chmod  -R 777 /opt                  ## 根目录下的opt目录 提权777
-            sudo chmod +x *.sh                       ## 当前所有脚本提可执行权限
-            sudo ./mk_s905d_n1.sh                    ## 执行N1打包脚本
-            sudo cp files/update-amlogic-openwrt.sh tmp/update-amlogic-openwrt.sh        ## 复制更新脚本
-            sudo chmod -R 777 tmp                    ## 提权tmp目录
-            cd tmp                                   ## 进入tmp目录
-            sudo pigz -9 N1-wangxiaofeng-70+o.img    ## 压缩N1固件
-            mv *.img.gz -t $GITHUB_WORKSPACE/openwrt/bin/targets/armvirt/*              ## 移动固件至 源armvirt目录内
-            mv *.sh -t $GITHUB_WORKSPACE/openwrt/bin/targets/armvirt/*                  ## 移动更新脚本至 源armvirt目录内
-            cd $GITHUB_WORKSPACE     # 进入仓库执行目录
-            rm -rf N1opt             # 已打包完成，删除打包目录
+            git clone https://github.com/wxfyes/N1packaging.git N1opt                                        ## 下载N1打包源码（与 openwrt、build 同一目录）
             
+            ## N1打包“70+0核心”（推荐70+o稳定版）
+            sudo chmod  -R 777 /opt
+            find N1opt/70+o/opt/* -name "*kernel*" | xargs -i cp -r {} /opt
+            cp openwrt/bin/targets/*/*/*.tar.gz /opt/kernel/openwrt-armvirt-64-default-rootfs.tar.gz
+            cd /opt/kernel
+            sudo chmod  -R 777 /opt
+            sudo chmod +x *.sh
+            sudo ./mk_s905d_n1.sh                                                                            ## 开始N1打包脚本命令！！！
+            sudo chmod -R 777 tmp
+            mv tmp/N1-*-70+o.img tmp/N1-lede-70+o.img
+            sudo cp files/update-amlogic-openwrt.sh tmp/update-amlogic-openwrt.sh
+            cd tmp
+            sudo pigz -9 N1-*-70+o.img
+            mv -f *.img.gz -t $GITHUB_WORKSPACE/openwrt/bin/targets/armvirt/*
+            mv -f *.sh -t $GITHUB_WORKSPACE/openwrt/bin/targets/armvirt/*
+            rm -rf /opt/kernel                                                                               ## 删除根目录下的/opt/kernel目录文件
+            
+            cd $GITHUB_WORKSPACE                                                                             ## 进入 仓库名称的 执行工作目录（与 openwrt、build 同一目录）
+            
+            ## N1打包“70+核心”测试版（和70+o打包命令一致）
+            sudo chmod  -R 777 /opt
+            find N1opt/70+/opt/* -name "*kernel*" | xargs -i cp -r {} /opt
+            cp openwrt/bin/targets/*/*/*.tar.gz /opt/kernel/openwrt-armvirt-64-default-rootfs.tar.gz
+            cd /opt/kernel
+            sudo chmod  -R 777 /opt
+            sudo chmod +x *.sh
+            sudo ./mk_s905d_n1.sh
+            sudo chmod -R 777 tmp
+            mv tmp/N1-*-70+.img tmp/N1-lede-70+.img
+            sudo cp files/update-amlogic-openwrt.sh tmp/update-amlogic-openwrt.sh
+            cd tmp
+            sudo pigz -9 N1-*-70+.img
+            mv -f *.img.gz -t $GITHUB_WORKSPACE/openwrt/bin/targets/armvirt/*
+            mv -f *.sh -t $GITHUB_WORKSPACE/openwrt/bin/targets/armvirt/*
+            rm -rf /opt/kernel
+            
+            rm -rf $GITHUB_WORKSPACE/N1opt                                                                   ## 已打包完成，删除N1打包源码
         else
             echo "***N1packaging源码目录已存在***"
-        
             
         fi
         
         
         echo "status=success" >>$GITHUB_OUTPUT        # 假如状态反馈成功，则输出到变量
-
+        
     - name: 整理文件                           ## Organize files
       id: organizer
       run: |
@@ -477,7 +502,7 @@ jobs:
         mkdir config                                                                                  # 创建config文件夹
         find openwrt/bin/targets/ -name "*config.buildinfo*" | xargs -i mv -f {} config               # 搜索目录中“config.buildinfo”文件，并移动至刚创建的 config 文件夹内 （-f =强制移动）
         
-        if [ -n "$(ls -A "openwrt/bin/targets/x86" 2>/dev/null)" ]; then                              # 搜索含有“kernel”名称的核心文件 并移动至targets目录内
+        if [ -n "$(ls -A "openwrt/bin/targets/x86" 2>/dev/null)" ]; then                              # 搜索含有“kernel”名称的核心文件 并移动至targets目录内（只搜索X86固件的核心）
          find openwrt/bin/targets/x86/* -name "*kernel*" | xargs -i mv -f {} openwrt/bin/targets
         fi
         
