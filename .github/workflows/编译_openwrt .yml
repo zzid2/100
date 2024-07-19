@@ -173,24 +173,24 @@ jobs:
         
         
         
-    - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
-      uses: xhnmt/pushplus-action@v1.0.0  ## 加载执行仓库：hhttps://github.com/xhnmt/pushplus-action
-      if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')      ## 判断 SERVERCHAN_SCKEY 变量为“开启”则运行，否则跳过；继续判断 工作流调度菜单为 wxtz 时“开启”运行，否则跳过；
-      with:
-        token: ${{ secrets.SCKEY }}
-        title: "编译[${{matrix.target}}]_${{env.CangKu}}仓库_#${{env.Run_number}}"
-        content: "
+    # - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
+      # uses: xhnmt/pushplus-action@v1.0.0  ## 加载执行仓库：hhttps://github.com/xhnmt/pushplus-action
+      # if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')      ## 判断 SERVERCHAN_SCKEY 变量为“开启”则运行，否则跳过；继续判断 工作流调度菜单为 wxtz 时“开启”运行，否则跳过；
+      # with:
+        # token: ${{ secrets.SCKEY }}
+        # title: "编译[${{matrix.target}}]_${{env.CangKu}}仓库_#${{env.Run_number}}"
+        # content: "
               
-              仓库名称：${{env.CangKu}}
-              
-              
-              工作流号：#${{env.Run_number}}
+              # 仓库名称：${{env.CangKu}}
               
               
-              固件名称：${{matrix.target}}
+              # 工作流号：#${{env.Run_number}}
               
               
-              触发时间：${{env.date1}}"
+              # 固件名称：${{matrix.target}}
+              
+              
+              # 触发时间：${{env.date1}}"
               
               
               
