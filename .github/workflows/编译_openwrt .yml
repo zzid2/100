@@ -263,6 +263,13 @@ jobs:
         
         cd openwrt                                                                      # 首次进入”软连接“源码 的执行目录“openwrt”
         
+        if [ ${{matrix.target}} != openwrt ]; then                    # 当编译“openwrt”纯净机型时，先删除这些文件夹
+          rm -rf package/lienol/luci-app-timecontrol
+          rm -rf package/ntlf9t/{smartdns,luci-app-smartdns}
+          rm -rf package/ctcgfw/{luci-app-argon-config,luci-theme-argonv3}
+          rm -rf package/lean/{luci-app-netdata,luci-theme-argon,k3screenctrl}
+        fi
+        
         rm -rf {LICENSE,README,README.md}
         rm -rf ./*/{LICENSE,README,README.md}
         rm -rf ./*/*/{LICENSE,README,README.md}    # 删除无用说明
@@ -432,24 +439,25 @@ jobs:
         
         
         ## 已删库
-        # if [ ${{matrix.target}} == "lede_N1" -o ${{matrix.target}} == "Project_N1" ];then             # 当编译N1机型目录时，复制N1固件到打包目录下，
-         # cp openwrt/bin/targets/armvirt/*/*.tar.gz reform/openwrt                                     # 复制要打包的文件至 reform/openwrt 目录内
-        
-         # cd reform
-         # sudo ./gen_openwrt -d -k latest                                                              # 进入打包源码目录内，然后执行N1打包脚本
-         
-         # devices=("phicomm-n1" "rk3328" "s9xxx" "vplus")
-         # cd out
-         # for x in ${devices[*]}; do
-           # cd $x
-           # filename=$(ls | awk -F '.img' '{print $1}')
-           # gzip *.img
-           # cd ../
-           # echo "firmware_$x=$filename" >> $GITHUB_ENV
-         # done
-           # cd ../../
-           # mv -f reform/out/*/*.img.gz openwrt/bin/targets/armvirt/*                                  # 移动N1机型固件到默认bin目录下
-        # fi
+        if [ ${{matrix.target}} == "lede_N1" -o ${{matrix.target}} == "Project_N1" ];then                    # 当编译N1机型目录时，复制N1固件到打包目录下，
+            git clone https://github.com/tuanqing/mknop reform
+            cp openwrt/bin/targets/armvirt/*/*.tar.gz reform/openwrt                                         # 复制要打包的文件至 reform/openwrt 目录内
+            
+            cd reform
+            sudo ./gen_openwrt -d -k latest                                                                  # 进入打包源码目录内，然后执行N1打包脚本
+            
+            devices=("phicomm-n1" "rk3328" "s9xxx" "vplus")
+            cd out
+            for x in ${devices[*]}; do
+            cd $x
+            filename=$(ls | awk -F '.img' '{print $1}')
+            gzip *.img
+            cd ../
+            echo "firmware_$x=$filename" >> $GITHUB_ENV
+            done
+            cd ../../
+            mv -f reform/out/*/*.img.gz openwrt/bin/targets/armvirt/*                                        # 移动N1机型固件到默认bin目录下
+        fi
         
         
         
