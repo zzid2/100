@@ -10,7 +10,7 @@
 # See /LICENSE for more information.
 #
 
-name: 编译OpenWrt                 ## Actions工作流的名称
+name: 编译OpenWrt                 ## Actions工作流的名称  GItHub搜索：OpenWrt-CI
 on:
   repository_dispatch:             ## 储存库_调度
   workflow_dispatch:               ## 工作流程_调度
@@ -179,24 +179,25 @@ jobs:
         
         
         
-    # - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
-      # uses: xhnmt/pushplus-action@v1.0.0  ## 加载执行仓库：hhttps://github.com/xhnmt/pushplus-action
-      # if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')      ## 判断 SERVERCHAN_SCKEY 变量为“开启”则运行，否则跳过；继续判断 工作流调度菜单为 wxtz 时“开启”运行，否则跳过；
-      # with:
-        # token: ${{ secrets.SCKEY }}
-        # title: "编译[${{matrix.target}}]_${{env.CangKu}}仓库_#${{env.Run_number}}"
-        # content: "
+    - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
+      uses: xhnmt/pushplus-action@v1.0.0  ## 加载执行仓库：hhttps://github.com/xhnmt/pushplus-action
+      continue-on-error: true             ## 出错时继续执行
+      if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')      ## 判断 SERVERCHAN_SCKEY 变量为“开启”则运行，否则跳过；继续判断 工作流调度菜单为 wxtz 时“开启”运行，否则跳过；
+      with:
+        token: ${{ secrets.SCKEY }}
+        title: "编译[${{matrix.target}}]_${{env.CangKu}}仓库_#${{env.Run_number}}"
+        content: "
               
-              # 仓库名称：${{env.CangKu}}
-              
-              
-              # 工作流号：#${{env.Run_number}}
+              仓库名称：${{env.CangKu}}
               
               
-              # 固件名称：${{matrix.target}}
+              工作流号：#${{env.Run_number}}
               
               
-              # 触发时间：${{env.date1}}"
+              固件名称：${{matrix.target}}
+              
+              
+              触发时间：${{env.date1}}"
               
               
               
@@ -456,25 +457,24 @@ jobs:
         
         
         ## 已删库
-        # if [ ${{matrix.target}} == "lede_N1" -o ${{matrix.target}} == "Project_N1" ];then                    # 当编译N1机型目录时，复制N1固件到打包目录下，
-            # git clone https://github.com/tuanqing/mknop reform
-            # cp openwrt/bin/targets/armvirt/*/*.tar.gz reform/openwrt                                         # 复制要打包的文件至 reform/openwrt 目录内
+        if [ ${{matrix.target}} == "lede_N11" -o ${{matrix.target}} == "Project_N11" ];then                    # 当编译N1机型目录时，复制N1固件到打包目录下，
+            git clone https://github.com/tuanqing/mknop reform
+            cp openwrt/bin/targets/armvirt/*/*.tar.gz reform/openwrt                                         # 复制要打包的文件至 reform/openwrt 目录内
             
-            # cd reform
-            # sudo ./gen_openwrt -d -k latest                                                                  # 进入打包源码目录内，然后执行N1打包脚本
-            
-            # devices=("phicomm-n1" "rk3328" "s9xxx" "vplus")
-            # cd out
-            # for x in ${devices[*]}; do
-            # cd $x
-            # filename=$(ls | awk -F '.img' '{print $1}')
-            # gzip *.img
-            # cd ../
-            # echo "firmware_$x=$filename" >> $GITHUB_ENV
-            # done
-            # cd ../../
-            # mv -f reform/out/*/*.img.gz openwrt/bin/targets/armvirt/*                                        # 移动N1机型固件到默认bin目录下
-        # fi
+            cd reform
+            sudo ./gen_openwrt -d -k latest                                                                  # 进入打包源码目录内，打包所有的固件！！！sudo ./gen_openwrt -d -k latest -m phicomm-n1      ## 只打包N1固件
+            devices=("phicomm-n1" "rk3328" "s9xxx" "vplus")
+            cd out
+            for x in ${devices[*]}; do
+                cd $x
+                filename=$(ls | awk -F '.img' '{print $1}')
+                gzip *.img
+                cd ../
+                echo "firmware_$x=$filename" >> $GITHUB_ENV
+            done
+            cd ../../
+            mv -f reform/out/*/*.img.gz openwrt/bin/targets/armvirt/*                                        # 移动N1机型固件到默认bin目录下
+        fi
         
         
         
@@ -604,7 +604,7 @@ jobs:
         
         
         
-    - name: 上传固件到WeTransfer             ## Upload firmware to WeTransfer
+    - name: 上传固件到WeTransfer          ## Upload firmware to WeTransfer
       id: wetransfer
       if: steps.organizer.outputs.status == 'success' && env.UPLOAD_WETRANSFER == 'true' && !cancelled()
       run: |
@@ -614,6 +614,20 @@ jobs:
         ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
         echo "::warning file=WeTransfer链接（${{matrix.target}}）::$(cat wetransfer.log | grep https)"
         echo "url=$(cat wetransfer.log | grep https | cut -f3 -d" ")" >> $GITHUB_OUTPUT
+        
+        
+        
+    - name: 上传到SSH服务器               ##Deploy files to server
+      uses: easingthemes/ssh-deploy@main
+      continue-on-error: true             ## 出错时继续执行
+      if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
+      with:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        ARGS: "-rlgoDzvc -i"
+        SOURCE: ${{ env.FIRMWARE }}                      ## 上传的原目录（多个源应以空格分隔。）
+        REMOTE_HOST: ${{ secrets.REMOTE_HOST }}          ## 远程主机
+        REMOTE_USER: ${{ secrets.REMOTE_USER }}          ## 远程用户
+        TARGET: ${{ secrets.REMOTE_TARGET }}             ## 目标目录   默认："/www/wwwroot/op.supes.top/firmware/${{matrix.target}}/"
         
         
         
@@ -686,7 +700,7 @@ jobs:
       uses: dev-drprasad/delete-older-releases@v0.3.4          ## https://github.com/dev-drprasad/delete-older-releases
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       with:
-        keep_latest: 10           ## 保留最少数（默认是3）
+        keep_latest: 3           ## 保留最少数（默认是3）
         delete_tags: true
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
@@ -725,5 +739,11 @@ jobs:
 
               # 祝小主人见人爱，花见花开，车见车载，天天好心情🎈！！！
 
+
+    - name: 电报通知 #Telegram notification
+      if: env.TELEGRAM_BOT_TOKEN && ! contains(github.event.action, 'notg')
+      continue-on-error: true
+      run: |
+        [ steps.compile.outputs.status == 'success' ] && curl -k --data chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" --data "text=🎉 OpenWrt ${{ env.date3 }} ${{matrix.target}} 编译成功 😋  https://op.supes.top/firmware/${{matrix.target}}/  ${{ env.COWURL }}   ${{ env.WETRANS }} 🚀" "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" || curl -k --data chat_id="${{ secrets.TELEGRAM_TO }}" --data "text=❌ OpenWrt ${{ env.date3 }} ${{matrix.target}} 编译失败 😂" "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage"
 
 
