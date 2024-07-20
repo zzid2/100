@@ -10,7 +10,7 @@
 # See /LICENSE for more information.
 #
 
-name: 编译_OpenWrt                 ## Actions工作流的名称
+name: 编译OpenWrt                 ## Actions工作流的名称
 on:
   repository_dispatch:             ## 储存库_调度
   workflow_dispatch:               ## 工作流程_调度
@@ -98,8 +98,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [lede_N1]                ## ←编译指定机型 “就是文件夹名称”，多选用英文逗号隔开可以同时编译；
-        # 目前可以选机型：openwrt,  lede_G-DOCK,  lede_hiwifi_HC5861,  lede_linksys_Wrt32x,  lede_N1,  lede_x86
+        target: [lede_N1,lede_x86]                ## ←编译指定机型 “就是文件夹名称”，多选用英文逗号隔开可以同时编译；
+        # 目前可以选机型：openwrt,lede_G-DOCK,lede_hiwifi_HC5861,lede_linksys_Wrt32x,lede_N1,lede_x86
 
     
     steps:
@@ -136,7 +136,12 @@ jobs:
       run: |
         pwd && ls                                                                        # 显示当前步骤的路径和所有文件和文件夹；
         
-        source "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini"               # 加载配置文件：/项目仓库名称/build/机型文件/settings.ini（每个机型文件夹内都有这个配置文件）
+        if [ -f "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini" ]; then      # 判断 优先加载 lede_x86/settings.ini 文件,其次加载 DIY/settings.ini 文件。
+            source "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini"
+        else
+            cp -rf ${GITHUB_WORKSPACE}/build/DIY/settings.ini ${GITHUB_WORKSPACE}/build/${{matrix.target}}
+            source "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini"
+        fi
         echo "REPO_URL=${REPO_URL}" >> $GITHUB_ENV                                       # = 源码地址
         echo "REPO_BRANCH=${REPO_BRANCH}" >> $GITHUB_ENV                                 # = 项目分支
         echo "CONFIG_FILE=${CONFIG_FILE}" >> $GITHUB_ENV                                 # = .config配置文件
@@ -322,17 +327,25 @@ jobs:
         
         
         
-        if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                      # 复制 编译机型目录内的“diy”文件到openwrt源码内
-         cp -Rf build/${{matrix.target}}/diy/* ./
+        if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                      # 判断复制 编译机型目录内的“diy”文件到openwrt源码内
+            cp -rf build/${{matrix.target}}/diy/* ./
+        else
+            cp -rf build/DIY/diy/* ./ 
         fi
         
-        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                    # 复制 编译机型目录内的“files”文件到openwrt源码内
-         cp -rf build/${{matrix.target}}/files files
-         chmod -R 777 build/${{matrix.target}}/files/* ./
+        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                    # 判断复制 编译机型目录内的“files”文件到openwrt源码内
+            cp -rf build/${{matrix.target}}/files files
+            chmod -R 777 build/${{matrix.target}}/files/* ./
+        else
+            cp -rf build/DIY/files files
+            chmod -R 777 build/${{matrix.target}}/files/* ./
+            
         fi
         
-        if [ -n "$(ls -A "build/${{matrix.target}}/patches" 2>/dev/null)" ]; then                  # 复制 编译机型目录内的“patches”文件到openwrt源码内
-          find "build/${{matrix.target}}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 --forward --no-backup-if-mismatch"
+        if [ -n "$(ls -A "build/${{matrix.target}}/patches" 2>/dev/null)" ]; then                  # 判断复制 编译机型目录内的“patches”文件到openwrt源码内
+            find "build/${{matrix.target}}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 --forward --no-backup-if-mismatch"
+        else
+            find "build/DIY/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 --forward --no-backup-if-mismatch"
         fi
         
         if [ -f "build/${{matrix.target}}/$CONFIG_FILE" ]; then                                    # 判断 优先加载 lede_x86/.config 文件,其次加载 DIY/.config 文件。
@@ -442,25 +455,25 @@ jobs:
         
         
         ## 已删库
-        if [ ${{matrix.target}} == "lede_N1" -o ${{matrix.target}} == "Project_N1" ];then                    # 当编译N1机型目录时，复制N1固件到打包目录下，
-            git clone https://github.com/tuanqing/mknop reform
-            cp openwrt/bin/targets/armvirt/*/*.tar.gz reform/openwrt                                         # 复制要打包的文件至 reform/openwrt 目录内
+        # if [ ${{matrix.target}} == "lede_N1" -o ${{matrix.target}} == "Project_N1" ];then                    # 当编译N1机型目录时，复制N1固件到打包目录下，
+            # git clone https://github.com/tuanqing/mknop reform
+            # cp openwrt/bin/targets/armvirt/*/*.tar.gz reform/openwrt                                         # 复制要打包的文件至 reform/openwrt 目录内
             
-            cd reform
-            sudo ./gen_openwrt -d -k latest                                                                  # 进入打包源码目录内，然后执行N1打包脚本
+            # cd reform
+            # sudo ./gen_openwrt -d -k latest                                                                  # 进入打包源码目录内，然后执行N1打包脚本
             
-            devices=("phicomm-n1" "rk3328" "s9xxx" "vplus")
-            cd out
-            for x in ${devices[*]}; do
-            cd $x
-            filename=$(ls | awk -F '.img' '{print $1}')
-            gzip *.img
-            cd ../
-            echo "firmware_$x=$filename" >> $GITHUB_ENV
-            done
-            cd ../../
-            mv -f reform/out/*/*.img.gz openwrt/bin/targets/armvirt/*                                        # 移动N1机型固件到默认bin目录下
-        fi
+            # devices=("phicomm-n1" "rk3328" "s9xxx" "vplus")
+            # cd out
+            # for x in ${devices[*]}; do
+            # cd $x
+            # filename=$(ls | awk -F '.img' '{print $1}')
+            # gzip *.img
+            # cd ../
+            # echo "firmware_$x=$filename" >> $GITHUB_ENV
+            # done
+            # cd ../../
+            # mv -f reform/out/*/*.img.gz openwrt/bin/targets/armvirt/*                                        # 移动N1机型固件到默认bin目录下
+        # fi
         
         
         

@@ -7,7 +7,7 @@ index 0939306..446ade3 100644
  				set network.$1.ipaddr='$ipad'
  				set network.$1.netmask='$netm'
 +				set network.$1.gateway='10.10.10.10'             # IPv4网关
-+				set network.$1.dns='100.100.100.100 223.5.5.5'   # DNS服务器
++				set network.$1.dns='111.111.111.111 223.5.5.5'   # DNS服务器
 +				set network.$1.broadcast='10.10.10.255'          # IPv4广播
  			EOF
  			[ -e /proc/sys/net/ipv6 ] && uci set network.$1.ip6assign='60'   # IPv6分配长度

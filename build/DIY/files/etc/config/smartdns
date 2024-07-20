@@ -32,7 +32,7 @@ config server
 	option enabled '1'
 	option type 'udp'
 	option name '114dns'
-	option ip '115.115.115.115'
+	option ip '116.116.116.116'
 	option port '53'
 
 config server
