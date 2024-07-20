@@ -15,7 +15,7 @@ env:
   REPO_URL_LEDE: https://github.com/coolsnowwolf/lede                     ## lede 源码仓库
   REPO_URL_SSRPLUS: https://github.com/fw876/helloworld                   ## SSR-Plus 源码
   REPO_URL_PASSWALL: https://github.com/xiaorouji/openwrt-passwall        ## Passwall 源码
-  REPO_URL_luci-app: https://github.com/zzid2/luci-app                    ## 自己整理仓库
+  REPO_URL_luci_app: https://github.com/zzid2/luci-app                    ## 自己整理仓库
   
   REPO_MASTER: master                                                     ## master 分支
   REPO_MAIN: main                                                         ## main   分支
@@ -128,7 +128,7 @@ jobs:
     - name: 提交哈希比对值
       id: getHash
       run: |
-        git clone --depth 1 $REPO_URL_luci-app -b $REPO_MAIN .
+        git clone --depth 1 $REPO_URL_luci_app -b $REPO_MAIN .
         echo "::set-output name=commitHash::$(git rev-parse HEAD)"
 
     - name: 比较哈希比对值
