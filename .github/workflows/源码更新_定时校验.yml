@@ -9,8 +9,13 @@
 # Description: Source code update checker
 #
 
-name: 定时启动_校验源码 #Update Checker
-
+name: 定时启动_校验源码                 ## Update Checker
+on:
+  workflow_dispatch:
+  
+  schedule:                                                               ## 定时触发开始编译(时间设置请看定时编译说明)
+    - cron: 30 8 * * *                  ## 每天早上8.30执行
+    
 env:
   REPO_URL_LEDE: https://github.com/coolsnowwolf/lede                     ## lede 源码仓库
   REPO_URL_SSRPLUS: https://github.com/fw876/helloworld                   ## SSR-Plus 源码
@@ -22,12 +27,6 @@ env:
   
   
   
-on:
-  workflow_dispatch:
-  
-  schedule:                                                               ## 定时触发开始编译(时间设置请看定时编译说明)
-    - cron: 30 8 * * *
-
 jobs:
 #---------------------------------------------------------------------------------------------------------------------------
   lede:                                 ## 监视lede源码
@@ -39,25 +38,26 @@ jobs:
       id: getHash
       run: |
         git clone --depth 1 $REPO_URL_LEDE -b $REPO_MASTER .              ## 克隆下载Lede源码
-        echo "::set-output name=commitHash::$(git rev-parse HEAD)"        ## 成功后输出变量到GitHub
+        echo "::set-output name=commitHash::$(git rev-parse HEAD)"        ## 如果下载成功，输出名称为 commitHash 的变量值到GitHub
 
     - name: 比较哈希比对值              ## Compare Commit Hash
       id: cacheHash
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
-        path: .commitHash                                                 ## 提交哈希值
+        path: .commitHash                                                 ## 提交 commitHash 哈希值文件，进行比较。
         key: HEAD-${{ steps.getHash.outputs.commitHash }}
 
     - name: 保存新的哈希比较值          ## Save New Commit Hash
       if: steps.cacheHash.outputs.cache-hit != 'true'
       run: |
-        echo ${{ steps.getHash.outputs.commitHash }} | tee .commitHash
+        echo ${{ steps.getHash.outputs.commitHash }} | tee .commitHash    ## 保存最新的哈希值文件 
 
     - name: 触发编译                    ## Trigger build
       if: steps.cacheHash.outputs.cache-hit != 'true'
-      uses: peter-evans/repository-dispatch@v1
+      uses: peter-evans/repository-dispatch@v3
       with:
         token: ${{ secrets.REPO_TOKEN }}
+        repository: github.repository
         event-type: lede源码更新                                          ## 触发编译后，显示的 工作流的称 Source Code Update
 #---------------------------------------------------------------------------------------------------------------------------
   ssrplus:                              ## 监视SSR-Plus源码
