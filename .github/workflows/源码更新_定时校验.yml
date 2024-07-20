@@ -154,5 +154,5 @@ jobs:
       with:
         token: ${{ secrets.REPO_TOKEN }}
         repository: ${{ github.repository }}
-        retain_days: 1                  ## 保留天数      （默认是1）
-        keep_minimum_runs: 1            ## 保存最少运行数（默认是3）
+        retain_days: 1                  ## 保留天数      （默认值：1）
+        keep_minimum_runs: 10           ## 保存最少运行数（默认值：3）

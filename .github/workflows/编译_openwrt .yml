@@ -691,8 +691,8 @@ jobs:
       with:
         token: ${{ secrets.REPO_TOKEN }}
         repository: ${{ github.repository }}   ## 执行当前仓库
-        retain_days: 1            ## 保留天数（默认是1）
-        keep_minimum_runs: 8     ## 保存最少运行数（默认是3）
+        retain_days: 1            ## 保留天数      （默认值：1）
+        keep_minimum_runs: 10     ## 保存最少运行数（默认值：3）
         
         
         
@@ -700,7 +700,7 @@ jobs:
       uses: dev-drprasad/delete-older-releases@v0.3.4          ## https://github.com/dev-drprasad/delete-older-releases
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       with:
-        keep_latest: 3           ## 保留最少数（默认是3）
+        keep_latest: 3            ## 保留最少数（默认值：3）
         delete_tags: true
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
