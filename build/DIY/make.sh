@@ -124,18 +124,18 @@ function makes {             ## 通用配置（自定义插件）
 
 function down_dl {           ## 下载DL库压缩包（外网用不到！）
  cd ../
-if [ ! -d $lede_path/dl ]; then      ## 判断 Lede 目录内是否有“DL文件夹”， 如果没有 就“执行下载判断”
-	if [ ! -f "./dl.tar.gz" ];then   ## 判断 当前是否有 dl.tar.gz 压缩包， 如果没有 就联网下载到当前目录内（下载判断）；
-		print_green "***下载 dl.tar.gz 压缩包***"
-		wget -P $lede_path http://10.10.10.16:21704/api/public/dl/GhWWQ_HT/dl.tar.gz               ## 联通下载 dl.tar.gz 压缩包至Lede目录内；   ## 在链接后缀加/dl.tar.gz
-		tar -zxvf $lede_path/dl.tar.gz -C $lede_path/ && rm -f $lede_path/dl.tar.gz                ## 先解压 dl.tar.gz 压缩包，然后再删除压缩包；
-	else
+if [ -d "$lede_path/dl" ]; then      ## 判断 Lede 目录内是否有“DL文件夹”， 如果没有 就“执行下载判断”
+	print_yellow "***DL库目录已经存在***"                                                          ## lede/dl 文件如果存在，提示跳过；
+else
+	if [ -f "./dl.tar.gz" ];then   ## 判断 当前是否有 dl.tar.gz 压缩包， 如果没有 就联网下载到当前目录内（下载判断）；
 		print_green "***复制本地 dl.tar.gz 压缩包***"
 		cp dl.tar.gz $lede_path                                                                    ## 复制当前 dl.tar.gz 压缩包至Lede目录内；
 		tar -zxvf $lede_path/dl.tar.gz -C $lede_path/ && rm -f $lede_path/dl.tar.gz                ## 先解压 dl.tar.gz 压缩包，然后再删除压缩包；
+	else
+		print_green "***下载 dl.tar.gz 压缩包***"
+		wget -P $lede_path http://10.10.10.16:21704/api/public/dl/GhWWQ_HT/dl.tar.gz               ## 联通下载 dl.tar.gz 压缩包至Lede目录内；   ## 在链接后缀加/dl.tar.gz
+		tar -zxvf $lede_path/dl.tar.gz -C $lede_path/ && rm -f $lede_path/dl.tar.gz                ## 先解压 dl.tar.gz 压缩包，然后再删除压缩包；
 	fi
-else
-	print_yellow "***DL库目录已经存在***"                                                          ## lede/dl 文件如果存在，提示跳过；
 fi
 
  cd $lede_path
