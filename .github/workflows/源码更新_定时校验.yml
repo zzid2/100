@@ -73,7 +73,7 @@ jobs:
 
     - name: 比较哈希比对值
       id: cacheHash
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: .commitHash
         key: HEAD-${{ steps.getHash.outputs.commitHash }}
@@ -85,9 +85,10 @@ jobs:
 
     - name: 触发编译
       if: steps.cacheHash.outputs.cache-hit != 'true'
-      uses: peter-evans/repository-dispatch@v1
+      uses: peter-evans/repository-dispatch@v3
       with:
         token: ${{ secrets.REPO_TOKEN }}
+        repository: ${{ github.repository }}
         event-type: SSR-Plus源码更新                                      ## 触发编译后，显示的 工作流的称 Source Code Update
 #---------------------------------------------------------------------------------------------------------------------------
   passwall:                             ## 监视Passwall源码
@@ -103,7 +104,7 @@ jobs:
 
     - name: 比较哈希比对值
       id: cacheHash
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: .commitHash
         key: HEAD-${{ steps.getHash.outputs.commitHash }}
@@ -115,9 +116,10 @@ jobs:
 
     - name: 触发编译
       if: steps.cacheHash.outputs.cache-hit != 'true'
-      uses: peter-evans/repository-dispatch@v1
+      uses: peter-evans/repository-dispatch@v3
       with:
         token: ${{ secrets.REPO_TOKEN }}
+        repository: ${{ github.repository }}
         event-type: Passwall源码更新                                     ## 触发编译后，显示的 工作流的称 Source Code Update
 #---------------------------------------------------------------------------------------------------------------------------
   luci-app:                             ## 监视luci-app源码
@@ -133,7 +135,7 @@ jobs:
 
     - name: 比较哈希比对值
       id: cacheHash
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: .commitHash
         key: HEAD-${{ steps.getHash.outputs.commitHash }}
@@ -145,9 +147,10 @@ jobs:
 
     - name: 触发编译
       if: steps.cacheHash.outputs.cache-hit != 'true'
-      uses: peter-evans/repository-dispatch@v1
+      uses: peter-evans/repository-dispatch@v3
       with:
         token: ${{ secrets.REPO_TOKEN }}
+        repository: ${{ github.repository }}
         event-type: luci-app源码更新                                     ## 触发编译后，显示的 工作流的称 Source Code Update
 #---------------------------------------------------------------------------------------------------------------------------
     - name: 删除工作流运行
