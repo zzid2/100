@@ -38,8 +38,7 @@ jobs:
       id: getHash
       run: |
         git clone --depth 1 $REPO_URL_LEDE -b $REPO_MASTER .              ## 克隆下载Lede源码
-        echo "::set-output name=commitHash::$(git rev-parse HEAD)"        ## 如果下载成功，输出名称为 commitHash 的变量值到GitHub
-
+        echo "commitHash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT         ## commitHash 文件值输出到GitHub变量
     - name: 比较哈希比对值              ## Compare Commit Hash
       id: cacheHash
       uses: actions/cache@v4
@@ -69,8 +68,7 @@ jobs:
       id: getHash
       run: |
         git clone --depth 1 $REPO_URL_SSRPLUS -b $REPO_MASTER .
-        echo "::set-output name=commitHash::$(git rev-parse HEAD)"
-
+        echo "commitHash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
     - name: 比较哈希比对值
       id: cacheHash
       uses: actions/cache@v4
@@ -100,8 +98,7 @@ jobs:
       id: getHash
       run: |
         git clone --depth 1 $REPO_URL_PASSWALL -b $REPO_MAIN .
-        echo "::set-output name=commitHash::$(git rev-parse HEAD)"
-
+        echo "commitHash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
     - name: 比较哈希比对值
       id: cacheHash
       uses: actions/cache@v4
@@ -131,8 +128,7 @@ jobs:
       id: getHash
       run: |
         git clone --depth 1 $REPO_URL_luci_app -b $REPO_MAIN .
-        echo "::set-output name=commitHash::$(git rev-parse HEAD)"
-
+        echo "commitHash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
     - name: 比较哈希比对值
       id: cacheHash
       uses: actions/cache@v4
