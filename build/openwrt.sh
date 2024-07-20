@@ -71,15 +71,15 @@ sudo -E apt-get -qq autoremove --purge -y
 sudo -E apt-get -qq clean -y
 
 
-# 安装编译环境（openwrt-env）
-if [ ! -f "DIY/openwrt-env" ];then   # 如果本地不存在，就在线下载；
-	print_yellow "***下载openwrt-env***"
+# 安装环境文件（环境文件env）
+if [ ! -f "DIY/env" ];then   # 如果本地不存在，就在线下载；
+	print_yellow "***下载环境文件env***"
 	mkdir -p DIY                     # 新建DIY目录；
-	curl -L https://raw.githubusercontent.com/zzid2/bendi/main/DIY/openwrt-env -o DIY/openwrt-env                       ## 下载openwrt-env
+	curl -L https://raw.githubusercontent.com/zzid2/100/main/build/env -o DIY/env                       ## 下载环境文件env
 else
-	print_green "***使用本地openwrt-env***"
+	print_green "***使用本地环境文件env***"
 fi
-sudo apt-get -y install $(cat DIY/openwrt-env)                                   ## 安装依赖文件openwrt-env 
+sudo apt-get -y install $(cat DIY/env)                                   ## 安装环境文件env 
 
 
 # 下载Lean源码；
@@ -123,7 +123,7 @@ rm -rf $lede_path/diy-part2.sh
 if [ ! -d "$lede_path/configs" ]; then  # 如果本地不存在，就在线下载；
 	if [ ! -d "$project_path/DIY/configs" ];then 
 		print_yellow "***下载configs***"
-		svn_export "main" "DIY/configs" "$project_path/DIY/configs" https://github.com/zzid2/bendi                      ## 下载configs        ## 参数1= 分支名, 参数2= 子目录, 参数3= 目标目录, 参数4= 仓库地址。
+		svn_export "main" "build/common/configs" "$project_path/DIY/configs" https://github.com/zzid2/100                      ## 下载configs        ## 参数1= 分支名, 参数2= 子目录, 参数3= 目标目录, 参数4= 仓库地址。
 		cp -rv $project_path/DIY/configs $lede_path/configs
 	else
 		print_green "***使用本地configs机型目录***"
@@ -137,7 +137,7 @@ fi
 # 复制本地.config文件；
 if [ ! -f "$project_path/DIY/.config" ]; then       ## 如果本地不存在，就在线下载；
 	print_yellow "***下载.config***"
-	curl -L https://raw.githubusercontent.com/zzid2/bendi/main/DIY/.config -o $project_path/DIY/.config                 ## 下载.config
+	curl -L https://raw.githubusercontent.com/zzid2/100/main/build/common/.config -o $project_path/DIY/.config                 ## 下载.config
 else 
 	print_green "***使用本地.config配置***"
 fi
@@ -153,7 +153,7 @@ if [ -f "$project_path/DIY/make.sh" ];then          ## 如果本地存在，直�
 	cp DIY/make.sh $lede_path
     $lede_path/make.sh
 else
-		curl -L https://raw.githubusercontent.com/zzid2/bendi/main/DIY/make.sh -o DIY/make.sh                           ## 下载make.sh编译脚本
+		curl -L https://raw.githubusercontent.com/zzid2/100/main/build/common/make.sh -o DIY/make.sh                           ## 下载make.sh编译脚本
 		cp DIY/make.sh $lede_path
 		
         if [ -f "$lede_path/make.sh" ];then 
