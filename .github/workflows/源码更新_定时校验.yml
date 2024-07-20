@@ -57,7 +57,7 @@ jobs:
       uses: peter-evans/repository-dispatch@v3
       with:
         token: ${{ secrets.REPO_TOKEN }}
-        repository: github.repository
+        repository: ${{ github.repository }}
         event-type: lede源码更新                                          ## 触发编译后，显示的 工作流的称 Source Code Update
 #---------------------------------------------------------------------------------------------------------------------------
   ssrplus:                              ## 监视SSR-Plus源码
