@@ -293,11 +293,11 @@ jobs:
         
         cd openwrt                                                                                  # 后续执行命令默认进入：“openwrt”源码目录
         
-        if [ -f "build/${{matrix.target}}/$DIY_P1_SH" ]; then                                       # 判断执行diy-part1脚本！！！
+        if [ -f "build/${{matrix.target}}/$DIY_P1_SH" ]; then                                       # 判断 优先加载 lede_x86/diy-part1 文件,其次加载 DIY/diy-part1 文件。
           chmod +x build/${{matrix.target}}/$DIY_P1_SH
           /bin/bash "build/${{matrix.target}}/$DIY_P1_SH"
         else
-          mv build/$DIY_P1_SH build/${{matrix.target}}
+          mv build/DIY/$DIY_P1_SH build/${{matrix.target}}
           chmod +x build/${{matrix.target}}/$DIY_P1_SH
           /bin/bash "build/${{matrix.target}}/$DIY_P1_SH"
         
@@ -311,11 +311,11 @@ jobs:
         
         cd openwrt                           # 进入“openwrt”源码目录
         
-        if [ -f "build/${{matrix.target}}/$DIY_P2_SH" ]; then                                      # 判断执行diy-part2脚本！！！
+        if [ -f "build/${{matrix.target}}/$DIY_P2_SH" ]; then                                      # 判断 优先加载 lede_x86/diy-part2 文件,其次加载 DIY/diy-part2 文件。
           chmod +x build/${{matrix.target}}/$DIY_P2_SH
           /bin/bash "build/${{matrix.target}}/$DIY_P2_SH"
         else
-          mv build/$DIY_P2_SH build/${{matrix.target}}
+          mv build/DIY/$DIY_P2_SH build/${{matrix.target}}
           chmod +x build/${{matrix.target}}/$DIY_P2_SH
           /bin/bash "build/${{matrix.target}}/$DIY_P2_SH"
         fi
@@ -335,8 +335,11 @@ jobs:
           find "build/${{matrix.target}}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 --forward --no-backup-if-mismatch"
         fi
         
-        [ -e build/${{matrix.target}}/$CONFIG_FILE ]                                               # 移动 编译机型目录内的“.config”文件到openwrt源码内
-        mv build/${{matrix.target}}/$CONFIG_FILE .config
+        if [ -f "build/${{matrix.target}}/$CONFIG_FILE" ]; then                                    # 判断 优先加载 lede_x86/.config 文件,其次加载 DIY/.config 文件。
+            mv build/${{matrix.target}}/$CONFIG_FILE .config
+        else
+            cp -rf build/DIY/$CONFIG_FILE .config
+        fi
         
         
         
