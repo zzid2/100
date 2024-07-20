@@ -10,7 +10,7 @@
 # See /LICENSE for more information.
 #
 
-name: 编译 ${{matrix.target}}           ## Actions工作流的名称
+name: 编译_OpenWrt                 ## Actions工作流的名称
 on:
   repository_dispatch:             ## 储存库_调度
   workflow_dispatch:               ## 工作流程_调度
