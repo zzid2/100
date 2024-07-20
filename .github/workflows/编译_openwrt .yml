@@ -83,7 +83,7 @@ env:
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}      ## TELEGRAM_CHAT_ID   === TG电报群令牌
   TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}  ## TELEGRAM_BOT_TOKEN === TG电报群密钥
   Author: ${{github.actor}}                              ## 提取 Github用户ID，如：zuoweiid
-  GITURL: https://github.com/${{github.repository}}      ## 提取 项目仓库地址 = https://github.com +（用户ID + 项目仓库名字），如：zuoweiid/10
+  GITURL: https://github.com/${{github.repository}}      ## 提取 项目仓库地址 = https://github.com +（用户ID + 项目仓库名字），如：zuoweiid/10    ${{github.repository}}=当前仓库
   Run_number: ${{github.run_number}}                     ## 提取 Actions当前运行编号，如#12
 
 
@@ -690,9 +690,9 @@ jobs:
       uses: Mattraks/delete-workflow-runs@main        ## GitRML/delete-workflow-runs@v2 已经停更     改为： https://github.com/Mattraks/delete-workflow-runs
       with:
         token: ${{ secrets.REPO_TOKEN }}
-        repository: ${{ github.repository }}
-        retain_days: 10           ## 保留天数（默认是1）
-        keep_minimum_runs: 10     ## 保存最少运行数（默认是3）
+        repository: ${{ github.repository }}   ## 执行当前仓库
+        retain_days: 1            ## 保留天数（默认是1）
+        keep_minimum_runs: 8     ## 保存最少运行数（默认是3）
         
         
         
