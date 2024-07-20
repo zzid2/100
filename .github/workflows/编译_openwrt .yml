@@ -142,6 +142,7 @@ jobs:
             cp -rf ${GITHUB_WORKSPACE}/build/DIY/settings.ini ${GITHUB_WORKSPACE}/build/${{matrix.target}}
             source "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini"
         fi
+        
         echo "REPO_URL=${REPO_URL}" >> $GITHUB_ENV                                       # = 源码地址
         echo "REPO_BRANCH=${REPO_BRANCH}" >> $GITHUB_ENV                                 # = 项目分支
         echo "CONFIG_FILE=${CONFIG_FILE}" >> $GITHUB_ENV                                 # = .config配置文件
@@ -222,8 +223,8 @@ jobs:
               
               # 固件名称：${{matrix.target}}
               
-
-
+            
+            
     - name: 安装编译环境                ## Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive      ## 非交互模式
@@ -327,13 +328,13 @@ jobs:
         
         
         
-        if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                      # 判断复制 编译机型目录内的“diy”文件到openwrt源码内
+        if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                      # 判断 优先复制 编译机型目录内的“diy”文件到openwrt源码内
             cp -rf build/${{matrix.target}}/diy/* ./
         else
             cp -rf build/DIY/diy/* ./ 
         fi
         
-        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                    # 判断复制 编译机型目录内的“files”文件到openwrt源码内
+        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                    # 判断 优先复制 编译机型目录内的“files”文件到openwrt源码内
             cp -rf build/${{matrix.target}}/files files
             chmod -R 777 build/${{matrix.target}}/files/* ./
         else
@@ -342,7 +343,7 @@ jobs:
             
         fi
         
-        if [ -n "$(ls -A "build/${{matrix.target}}/patches" 2>/dev/null)" ]; then                  # 判断复制 编译机型目录内的“patches”文件到openwrt源码内
+        if [ -n "$(ls -A "build/${{matrix.target}}/patches" 2>/dev/null)" ]; then                  # 判断 优先复制 编译机型目录内的“patches”文件到openwrt源码内
             find "build/${{matrix.target}}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 --forward --no-backup-if-mismatch"
         else
             find "build/DIY/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 --forward --no-backup-if-mismatch"
