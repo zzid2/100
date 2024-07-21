@@ -351,7 +351,13 @@ jobs:
         # fi
         
         
-        cp -rf build/${{matrix.target}}/files files 2>/dev/null || cp -rf build/DIY/files files chmod -R 777 build/${{matrix.target}}/files
+        # cp -rf build/${{matrix.target}}/files files 2>/dev/null || cp -rf build/DIY/files files chmod -R 777 build/${{matrix.target}}/files
+        
+        
+        [ -d build/DIY/files ] && {
+            cp -rf build/DIY/files files;
+            chmod -R 777 build/${{matrix.target}}/files/* ./;
+        }
         
         
         if [ -n "$(ls -A "build/${{matrix.target}}/patches" 2>/dev/null)" ]; then                  # 判断 优先复制 编译机型目录内的“patches”文件到openwrt源码内
