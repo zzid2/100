@@ -339,7 +339,7 @@ jobs:
             cp -rf build/DIY/diy/* ./ 
         fi
         
-        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then && !cancelled()                    # 判断 优先复制 编译机型目录内的“files”文件到openwrt源码内
+        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then || !cancelled()                    # 判断 优先复制 编译机型目录内的“files”文件到openwrt源码内
             cp -rf build/${{matrix.target}}/files files
             chmod -R 777 build/${{matrix.target}}/files/* ./
         else
