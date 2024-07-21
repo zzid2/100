@@ -333,15 +333,16 @@ jobs:
         fi
             
             
-        if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                      # 判断 优先复制 编译机型目录内的“diy”文件到openwrt源码内
+        if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                      # 判断目录 优先复制 编译机型目录内的“diy”文件到openwrt源码内   
             cp -rf build/${{matrix.target}}/diy/* ./
         else
             cp -rf build/DIY/diy/* ./ 
         fi
+        # 所以 2>/dev/null 的意思是将标准错误的输出重定向到 /dev/null，这样任何命令产生的错误消息都不会显示在终端上，而是会被完全忽略      这时候可以使用 2>/dev/null 来保持输出的整洁性
+        # 例如，如果你运行一个命令来查找文件，但是你不想让用户看到找不到文件的错误信息，你可以用 find /path/to/files -name "example.txt" 2>/dev/null 来避免显示这些错误消息。
             
             
-            
-        # if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                    # 判断 优先复制 编译机型目录内的“files”文件到openwrt源码内
+        # if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                    # 判断目录 （-n 表示有非空字符文件，则执行 then 后面的命令）优先复制 编译机型目录内的“files”文件到openwrt源码内
             # cp -rf build/${{matrix.target}}/files files
             # chmod -R 777 build/${{matrix.target}}/files/* ./
         # else
@@ -351,13 +352,46 @@ jobs:
         # fi
         
         
+        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                    # 判断目录 （-n 表示有非空字符文件，则执行 then 后面的命令）优先复制 编译机型目录内的“files”文件到openwrt源码内
+            cp -rf build/${{matrix.target}}/files files
+            chmod -R 777 build/${{matrix.target}}/files/* ./
+        else
+            if [ -d "build/DIY/files" ]; then
+                cp -rf build/DIY/files files
+                chmod -R 777 build/${{matrix.target}}/files/* ./
+            else
+                echo "错误: files目录不存在"
+            fi
+        fi
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         # cp -rf build/${{matrix.target}}/files files 2>/dev/null || cp -rf build/DIY/files files chmod -R 777 build/${{matrix.target}}/files
         
         
-        [ -d build/DIY/files ] && {
-            cp -rf build/DIY/files files;
-            chmod -R 777 build/${{matrix.target}}/files/* ./;
-        }
+        # [ -d build/DIY/files ] && {
+            # cp -rf build/DIY/files files;
+            # chmod -R 777 build/${{matrix.target}}/files/* ./;
+        # }
         
         
         if [ -n "$(ls -A "build/${{matrix.target}}/patches" 2>/dev/null)" ]; then                  # 判断 优先复制 编译机型目录内的“patches”文件到openwrt源码内
