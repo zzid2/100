@@ -20,13 +20,13 @@ print_yellow "正在执行diy-part2.sh脚本......"
 # 修改默认IP为192.168.10.1
 sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate 
 
-# 修改 root密码登录为空
+# 修改 root密码登录为空（免密码登录）
 sed -i 's@.*CYXluq4wUazHjmCDBCqXF*@#&@g' package/lean/default-settings/files/zzz-default-settings
 
-# 修改主机名
+# 修改主机名（不能纯数字或者中文）
 sed -i '/uci commit system/i\uci set system.@system[0].hostname='OpenWrt_x86'' package/lean/default-settings/files/zzz-default-settings
 
-# 修改固件版本号
+# 修改固件版本号 说明：LEDE build $(TZ=UTC-8 date "+%Y.%m.%d") 显示范例： LEDE build 2021.02.08 @ 说明：【LEDE=作者 + build=建造 + （UTC-8=字符编码 + date=时间格式）】
 sed -i "s/OpenWrt /LEDE build $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" package/lean/default-settings/files/zzz-default-settings
 
 # 修改 默认主题
