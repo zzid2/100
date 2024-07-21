@@ -79,8 +79,8 @@ else
 	mkdir -p DIY                     # 新建DIY目录；
 	curl -L https://raw.githubusercontent.com/zzid2/100/main/build/DIY/env -o DIY/env                       ## 下载环境文件env
 fi
-sudo apt-get -y install $(cat DIY/env)                                   ## 安装环境文件env 
-
+# sudo apt-get -y install $(cat DIY/env)                                   ## 安装环境文件env 
+sudo apt-get -y install $(awk '{print $1}' DIY/env)
 
 # 下载Lean源码；
 if [ ! -d "./$lede_path" ];then      # 如果本地不存在，就在线下载（此判断是反方式）；
