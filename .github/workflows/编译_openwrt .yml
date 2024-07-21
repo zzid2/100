@@ -300,7 +300,7 @@ jobs:
         
         cd openwrt                                                                                  # 后续执行命令默认进入：“openwrt”源码目录
         
-        if [ -f "build/${{matrix.target}}/$DIY_P1_SH" ]; then                                       # 判断 优先加载 lede_x86/diy-part1 文件,其次加载 DIY/diy-part1 文件。
+        if [ -f "build/${{matrix.target}}/$DIY_P1_SH" ]; then                                       # 判断diy-part1  优先加载 lede_x86/diy-part1 文件,其次加载 build/DIY/diy-part1 文件。
           chmod +x build/${{matrix.target}}/$DIY_P1_SH
           /bin/bash "build/${{matrix.target}}/$DIY_P1_SH"
         else
@@ -318,7 +318,7 @@ jobs:
         
         cd openwrt                           # 进入“openwrt”源码目录
         
-        if [ -f "build/${{matrix.target}}/$DIY_P2_SH" ]; then                                      # 判断 优先加载 lede_x86/diy-part2 文件,其次加载 DIY/diy-part2 文件。
+        if [ -f "build/${{matrix.target}}/$DIY_P2_SH" ]; then                                       # 判断diy-part2  优先加载 lede_x86/diy-part2 文件,其次加载 build/DIY/diy-part2 文件。
           chmod +x build/${{matrix.target}}/$DIY_P2_SH
           /bin/bash "build/${{matrix.target}}/$DIY_P2_SH"
         else
@@ -327,32 +327,24 @@ jobs:
           /bin/bash "build/${{matrix.target}}/$DIY_P2_SH"
         fi
         
-        if [ -f "build/${{matrix.target}}/$DIY_OEM_SH" ]; then                                     # 个性化配置OEM
+        if [ -f "build/${{matrix.target}}/$DIY_OEM_SH" ]; then                                      # 个性化配置OEM
             chmod +x build/${{matrix.target}}/$DIY_OEM_SH
             /bin/bash "build/${{matrix.target}}/$DIY_OEM_SH"
         fi
             
             
-        if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                      # 判断目录 优先复制 编译机型目录内的“diy”文件到openwrt源码内   
+        if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                       # 判断diy目录  优先加载 lede_x86/diy 目录，其次加载 build/DIY/diy 目录；最后复制到openwrt源码内。 
             cp -rf build/${{matrix.target}}/diy/* ./
         else
-            cp -rf build/DIY/diy/* ./ 
+            if [ -d "build/DIY/diy" ]; then
+                cp -rf build/DIY/diy/* ./
+            else
+                echo "错误: diy目录不存在"
+            fi
         fi
-        # 所以 2>/dev/null 的意思是将标准错误的输出重定向到 /dev/null，这样任何命令产生的错误消息都不会显示在终端上，而是会被完全忽略      这时候可以使用 2>/dev/null 来保持输出的整洁性
-        # 例如，如果你运行一个命令来查找文件，但是你不想让用户看到找不到文件的错误信息，你可以用 find /path/to/files -name "example.txt" 2>/dev/null 来避免显示这些错误消息。
             
             
-        # if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                    # 判断目录 （-n 表示有非空字符文件，则执行 then 后面的命令）优先复制 编译机型目录内的“files”文件到openwrt源码内
-            # cp -rf build/${{matrix.target}}/files files
-            # chmod -R 777 build/${{matrix.target}}/files/* ./
-        # else
-            # cp -rf build/DIY/files files
-            # chmod -R 777 build/${{matrix.target}}/files/* ./
-            
-        # fi
-        
-        
-        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                    # 判断目录 （-n 表示有非空字符文件，则执行 then 后面的命令）优先复制 编译机型目录内的“files”文件到openwrt源码内
+        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                     # 判断files目录  （-n 表示有非空字符文件，则执行 then 后面的命令）
             cp -rf build/${{matrix.target}}/files files
             chmod -R 777 build/${{matrix.target}}/files/* ./
         else
@@ -365,27 +357,45 @@ jobs:
         fi
         
         
+        if [ -n "$(ls -A "build/${{matrix.target}}/patches" 2>/dev/null)" ]; then                   # 判断patches目录
+            find "build/${{matrix.target}}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -0 -I % sh -c 'cat "%" | patch -d "./" -p1 --forward --no-backup-if-mismatch'
+        else
+            if [ -d "build/DIY/patches" ]; then
+                find "build/DIY/patches" -type f -name '*.patch' -print0 | sort -z | xargs -0 -I % sh -c 'cat "%" | patch -d "./" -p1 --forward --no-backup-if-mismatch'
+            else
+                echo "错误: patches目录不存在"
+            fi
+        fi
+            
+            
+        if [ -f "build/${{matrix.target}}/$CONFIG_FILE" ]; then                                    # 判断.config 文件  优先加载 lede_x86/.config 文件,其次加载 build/DIY/.config 文件；最后复制到openwrt源码内。
+            mv build/${{matrix.target}}/$CONFIG_FILE .config
+        else
+            cp -rf build/DIY/$CONFIG_FILE .config
+        fi  
+            
+            
+            
+            
+            
+            
+        # if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                      # 判断diy目录  备用旧命令
+            # cp -rf build/${{matrix.target}}/diy/* ./
+        # else
+            # cp -rf build/DIY/diy/* ./ 
+        # fi
         
         
         
+        # if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                    # 判断files目录  备用旧命令
+            # cp -rf build/${{matrix.target}}/files files
+            # chmod -R 777 build/${{matrix.target}}/files/* ./
+        # else
+            # cp -rf build/DIY/files files
+            # chmod -R 777 build/${{matrix.target}}/files/* ./
+            
+        # fi
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        # cp -rf build/${{matrix.target}}/files files 2>/dev/null || cp -rf build/DIY/files files chmod -R 777 build/${{matrix.target}}/files
         
         
         # [ -d build/DIY/files ] && {
@@ -394,17 +404,15 @@ jobs:
         # }
         
         
-        if [ -n "$(ls -A "build/${{matrix.target}}/patches" 2>/dev/null)" ]; then                  # 判断 优先复制 编译机型目录内的“patches”文件到openwrt源码内
-            find "build/${{matrix.target}}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 --forward --no-backup-if-mismatch"
-        else
-            find "build/DIY/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 --forward --no-backup-if-mismatch"
-        fi
+        # cp -rf build/${{matrix.target}}/files files 2>/dev/null || cp -rf build/DIY/files files chmod -R 777 build/${{matrix.target}}/files
         
-        if [ -f "build/${{matrix.target}}/$CONFIG_FILE" ]; then                                    # 判断 优先加载 lede_x86/.config 文件,其次加载 DIY/.config 文件。
-            mv build/${{matrix.target}}/$CONFIG_FILE .config
-        else
-            cp -rf build/DIY/$CONFIG_FILE .config
-        fi
+        
+        
+        # if [ -n "$(ls -A "build/${{matrix.target}}/patches" 2>/dev/null)" ]; then                  # 判断patches目录   备用旧命令
+            # find "build/${{matrix.target}}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 --forward --no-backup-if-mismatch"
+        # else
+            # find "build/DIY/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 --forward --no-backup-if-mismatch"
+        # fi
         
         
         
