@@ -338,15 +338,21 @@ jobs:
         else
             cp -rf build/DIY/diy/* ./ 
         fi
-        
-        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then || !cancelled()                    # 判断 优先复制 编译机型目录内的“files”文件到openwrt源码内
-            cp -rf build/${{matrix.target}}/files files
-            chmod -R 777 build/${{matrix.target}}/files/* ./
-        else
-            cp -rf build/DIY/files files
-            chmod -R 777 build/${{matrix.target}}/files/* ./
             
-        fi
+            
+            
+        # if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                    # 判断 优先复制 编译机型目录内的“files”文件到openwrt源码内
+            # cp -rf build/${{matrix.target}}/files files
+            # chmod -R 777 build/${{matrix.target}}/files/* ./
+        # else
+            # cp -rf build/DIY/files files
+            # chmod -R 777 build/${{matrix.target}}/files/* ./
+            
+        # fi
+        
+        
+        cp -rf build/${{matrix.target}}/files files 2>/dev/null || cp -rf build/DIY/files files chmod -R 777 build/${{matrix.target}}/files
+        
         
         if [ -n "$(ls -A "build/${{matrix.target}}/patches" 2>/dev/null)" ]; then                  # 判断 优先复制 编译机型目录内的“patches”文件到openwrt源码内
             find "build/${{matrix.target}}/patches" -type f -name '*.patch' -print0 | sort -z | xargs -I % -t -0 -n 1 sh -c "cat '%'  | patch -d './' -p1 --forward --no-backup-if-mismatch"
