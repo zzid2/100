@@ -57,7 +57,7 @@ jobs:
       with:
         token: ${{ secrets.REPO_TOKEN }}
         repository: ${{ github.repository }}
-        event-type: lede源码更新                                          ## 触发编译后，显示的 工作流的称 Source Code Update
+        event-type: lede源码更新_触发编译                                 ## 触发编译后，显示的 工作流的称 Source Code Update
 #---------------------------------------------------------------------------------------------------------------------------
   ssrplus:                              ## 监视SSR-Plus源码
     runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
       with:
         token: ${{ secrets.REPO_TOKEN }}
         repository: ${{ github.repository }}
-        event-type: SSR-Plus源码更新                                      ## 触发编译后，显示的 工作流的称 Source Code Update
+        event-type: SSR-Plus源码更新_触发编译                             ## 触发编译后，显示的 工作流的称 Source Code Update
 #---------------------------------------------------------------------------------------------------------------------------
   passwall:                             ## 监视Passwall源码
     runs-on: ubuntu-latest
@@ -117,7 +117,7 @@ jobs:
       with:
         token: ${{ secrets.REPO_TOKEN }}
         repository: ${{ github.repository }}
-        event-type: Passwall源码更新                                     ## 触发编译后，显示的 工作流的称 Source Code Update
+        event-type: Passwall源码更新_触发编译                             ## 触发编译后，显示的 工作流的称 Source Code Update
 #---------------------------------------------------------------------------------------------------------------------------
   luci-app:                             ## 监视luci-app源码
     runs-on: ubuntu-latest
@@ -147,7 +147,7 @@ jobs:
       with:
         token: ${{ secrets.REPO_TOKEN }}
         repository: ${{ github.repository }}
-        event-type: luci-app源码更新                                     ## 触发编译后，显示的 工作流的称 Source Code Update
+        event-type: luci-app源码更新_触发编译                             ## 触发编译后，显示的 工作流的称 Source Code Update
 #---------------------------------------------------------------------------------------------------------------------------
     - name: 删除工作流运行
       uses: Mattraks/delete-workflow-runs@main
