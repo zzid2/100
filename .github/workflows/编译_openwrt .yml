@@ -176,11 +176,11 @@ jobs:
          echo "NAME2=Official_" >> $GITHUB_ENV
         fi
         
-        export LANG=zh_CN.UTF-8           ## 磁盘情况 输出文本为：“中文”                 输出为英文：export LANG=en_US.UTF-8
-        echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV
         sudo apt-get install -y language-pack-zh-hans    # 下载中文语言包
-        LANG=zh_CN.UTF-8 df -hT
-        export LANG=$LANG
+        # export LANG=zh_CN.UTF-8           ## 磁盘情况 输出文本为：“中文”                 输出为英文：export LANG=en_US.UTF-8
+        # echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV
+        # LANG=zh_CN.UTF-8 df -hT
+        # export LANG=$LANG
         df -hT
         
     - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
