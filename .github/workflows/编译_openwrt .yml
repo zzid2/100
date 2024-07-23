@@ -177,6 +177,7 @@ jobs:
          echo "NAME2=Official_" >> $GITHUB_ENV
         fi
         
+        export LANG=zh_CN.UTF-8           ## 磁盘情况 输出文本为：“中文”
         
         
     - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
@@ -483,8 +484,8 @@ jobs:
         
         
         
-    - name: 检查空间使用情况                     ## Check space usage
-      if: (!cancelled())
+    - name: 检查空间使用情况                        ## Check space usage
+      if: (!cancelled())                            ## 返回 false  操作没有取消时，继续运行。 !cancelled() = true取消    false没有取消
       run: df -hT
         
         
