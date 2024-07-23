@@ -176,7 +176,7 @@ jobs:
          echo "NAME2=Official_" >> $GITHUB_ENV
         fi
         
-        sudo apt-get install -y language-pack-zh-hans    # 下载中文语言包
+        # sudo apt-get install -y language-pack-zh-hans    # 下载中文语言包
         LANG=zh_CN.UTF-8 df -hT
         
         # export LANG=zh_CN.UTF-8           ## 磁盘情况 输出文本为：“中文”                 输出为英文：export LANG=en_US.UTF-8
