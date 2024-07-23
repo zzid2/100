@@ -243,8 +243,8 @@ jobs:
         sudo chown $USER:$GROUPS /workdir              # 提高“workdir”目录的权限
         sudo -E apt-get -qq install xz-utils btrfs-progs zip dosfstools uuid-runtime pigz         # N1固件打包必需要的依赖
         
-        sudo apt-get install -y language-pack-zh-hans    # 下载中文语言包
-        
+        # sudo apt-get install -y language-pack-zh-hans    # 下载中文语言包
+        LANG=zh_CN.UTF-8 df -hT
         
     - name: 释放 Ubuntu 磁盘空间        ## Free Disk Space (Ubuntu) （预计释放31GB空间）
       uses: jlumbroso/free-disk-space@main             ## 加载执行仓库：https://github.com/jlumbroso/free-disk-space
