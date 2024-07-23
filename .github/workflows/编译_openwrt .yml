@@ -41,8 +41,8 @@ on:
   push:                             ## 修改任意代码（或指定文件） 触发编译
 #    branches:                      ## 当分支代码出现“修改变动时” 触发编译
 #      - master                     ## 默认是主分支代码变动时，触发编译
-  paths:                            ## 当指定文件“修改变动时” 触发编译
-    - '.github/workflows/编译_openwrt .yml'               ## 默认是diy.config文件变动时 触发编译
+    paths:                            ## 当指定文件“修改变动时” 触发编译
+      - '.github/workflows/编译_openwrt .yml'               ## 默认是diy.config文件变动时 触发编译
 
 
 #  release:                         ## release发布触发开始编译(只是一个触发条件,不会发布的,又麻烦,没卵用,不用研究)
