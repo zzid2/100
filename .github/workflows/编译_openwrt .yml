@@ -179,8 +179,8 @@ jobs:
         sudo apt-get install -y language-pack-zh-hans    # 安装中文语言包
         LANG=zh_CN.UTF-8 df -hT                          # df -hT 临时输出中文
         
-        # export LANG=zh_CN.UTF-8           ## 磁盘情况 输出文本为：“中文”                 输出为英文：export LANG=en_US.UTF-8
-        echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV
+        # export LANG=zh_CN.UTF-8                        ## 磁盘情况 输出文本为：“中文”                 输出为英文：export LANG=en_US.UTF-8
+        echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV           # 把中文语言包加入变量，一直输出中文
         # export LANG=$LANG
         # df -hT
         
@@ -247,6 +247,7 @@ jobs:
         sudo chown $USER:$GROUPS /workdir              # 提高“workdir”目录的权限
         sudo -E apt-get -qq install xz-utils btrfs-progs zip dosfstools uuid-runtime pigz         # N1固件打包必需要的依赖
         
+        df -hT
         
     - name: 释放 Ubuntu 磁盘空间        ## Free Disk Space (Ubuntu) （预计释放31GB空间）
       uses: jlumbroso/free-disk-space@main             ## 加载执行仓库：https://github.com/jlumbroso/free-disk-space
