@@ -1,6 +1,6 @@
 #!/bin/bash
-lede_path=$(pwd)                      ## 目录变量=Lede源码目录；用于githun编译命令
-cd $lede_path
+lede_path=$(pwd)                         ## 赋于成变量= 当前执行目录，lede源码目录；
+cd $lede_path                            ## 进入（Lede目录）内并执行操作；
 
 # 字体颜色配置
 print_error() {                           ## 打印红色字体

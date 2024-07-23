@@ -1,6 +1,6 @@
 #!/bin/bash
-project_path=$(cd `dirname $0`; pwd)     ##目录变量= 仓库项目的主目录
-lede_path="$project_path/lede"           ##目录变量= lede源码目录的执行目录
+project_path=$(cd `dirname $0`; pwd)     ## 当前脚本目录= （仓库目录）将当前脚本所在的目录路径 赋于成变量；
+lede_path="$project_path/lede"           ## 赋于成变量= lede源码目录
 
 #--------------------------------------------------------------
 #	系统环境: Ubuntu-20.04.4-LTS

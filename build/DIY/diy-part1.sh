@@ -1,8 +1,6 @@
 #!/bin/bash
-# lede_path=$(cd `dirname $0`; pwd)     ## 目录变量=Lede源码目录；获取当前执行的脚本文件的父目录
-# cd ${GITHUB_WORKSPACE}                ## 进入GitHub空间工作站 未测试
-lede_path=$(pwd)                      ## 目录变量=Lede源码目录；用于githun编译命令
-cd $lede_path
+lede_path=$(pwd)                         ## 赋于成变量= 当前执行目录，lede源码目录；
+cd $lede_path                            ## 进入（Lede目录）内并执行操作；
 
 
 # 字体颜色配置

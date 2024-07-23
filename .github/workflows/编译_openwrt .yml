@@ -176,18 +176,9 @@ jobs:
          echo "NAME2=Official_" >> $GITHUB_ENV
         fi
         
-        # sudo apt-get install -y language-pack-zh-hans    # 安装中文语言包
-        # echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV           # 加入中文语言包 的变量，会全部输出中文语言；
-        # LANG=zh_CN.UTF-8 df -hT                          # 临时一次输出中文“df -hT”
+        sudo apt-get install -y language-pack-zh-hans                                    # 安装中文语言包
+        echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV                                           # 加入中文语言包 的变量，会全部输出中文语言；
         
-        sudo apt-get install -y language-pack-zh-hant
-        echo "LANG=zh_TW.UTF-8" >> $GITHUB_ENV
-        # echo "LANG=zh_HK.UTF-8" >> $GITHUB_ENV
-        df -hT
-        
-        
-        # export LANG=zh_CN.UTF-8                        ## 磁盘情况 输出文本为：“中文”                 输出为英文：export LANG=en_US.UTF-8
-        # export LANG=$LANG
         
     - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
       uses: xhnmt/pushplus-action@v1.0.0  ## 加载执行仓库：hhttps://github.com/xhnmt/pushplus-action
@@ -252,7 +243,6 @@ jobs:
         sudo chown $USER:$GROUPS /workdir              # 提高“workdir”目录的权限
         sudo -E apt-get -qq install xz-utils btrfs-progs zip dosfstools uuid-runtime pigz         # N1固件打包必需要的依赖
         
-        df -hT
         
     - name: 释放 Ubuntu 磁盘空间        ## Free Disk Space (Ubuntu) （预计释放31GB空间）
       uses: jlumbroso/free-disk-space@main             ## 加载执行仓库：https://github.com/jlumbroso/free-disk-space

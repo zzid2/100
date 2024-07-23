@@ -1,8 +1,7 @@
 #!/bin/bash
-lede_path=$(cd `dirname $0`; pwd)         ## 目录变量=Openwrt-main/lede（当前执行目录在lede内）
-cd $lede_path                             ## 进入Lede源码目录内并执行操作
-# RELEASE_NAME="openwrt"                       ## 固件的变量名称
-# echo $RELEASE_NAME                           ## 输出变量
+lede_path=$(cd `dirname $0`; pwd)         ## 当前脚本目录= （Lede目录）将当前脚本所在的目录路径 赋于成变量；
+cd $lede_path                             ## 进入（Lede目录）内并执行操作；
+
 
 # 字体颜色配置
 print_error() {                           ## 打印红色字体
@@ -19,10 +18,8 @@ print_yellow() {                          ## 打印黄色字体
 
 
 # 时间变量
-# date=$(date "+%Y.%m.%d-%H%M")
-# date1=$(date "+%Y年%m月%d号-%H点%M分")
-# date2=$(date +"%Y.%m.%d-%H%M")
- date3="$date "+%Y年%m月%d号""
+ date=$(date "+%Y.%m.%d-%H%M")
+ date1=$(date "+%Y年%m月%d号-%H点%M分")
 
 
 # 更新源码
@@ -214,7 +211,6 @@ fi
 ##微信通知
 function weixin {
 
-date1=$(date +"%Y-%m-%d-%H:%M:%S")
 
 local IFS="";
 str_sucess="{\"token\":\"d9d4ff882fb9473e87b3ee605d936293\",\"title\":\"openWrt编译成功！\",\"content\":\"编译固件已完成！编译时间：$date1\",\"template\":\"html\"}"
