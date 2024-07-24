@@ -290,8 +290,18 @@ jobs:
           mixkey: 'x86'
           prefix: 'openwrt'
           
+          
+          
+          
+          
     - name: 加载DIY_1脚本                              ## Load custom feeds
       run: |
+        
+        
+        
+        
+        
+        
         pwd && ls                                      # 显示当前步骤的路径和所有文件和文件夹；
                 
         cp -Rf `find ./ -maxdepth 1 -type d ! -path './openwrt' ! -path './'` openwrt               # 复制当前 build “等所有文件（包含机型内所有DIY文件）” 至 openwrt目录下，
