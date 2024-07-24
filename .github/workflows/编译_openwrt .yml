@@ -232,6 +232,7 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive      ## 非交互模式
       run: |
+        
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo -E apt-get -qq update -y
         sudo -E apt-get -qq install -y build-essential asciidoc binutils bzip2 gawk gettext git libc6-dev libncurses5 libtinfo-dev libtinfo5 ncurses-doc libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
@@ -258,6 +259,7 @@ jobs:
     - name: 下载${{matrix.target}}源码                 ## Clone source code
       working-directory: /workdir                      ## 指定 执行工作目录为新创建的“workdir”目录，Lede源码也存放在此下 /workdir/openwrt
       run: |
+        
         # pwd && ls                                                     # 显示当前步骤的路径和所有文件和文件夹；
         # df -hT $PWD                                                   # 显示当前磁盘使用情况
         
