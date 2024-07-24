@@ -36,6 +36,9 @@ print_yellow() {                          ## 打印黄色字体
 }
 
 
+# 环境变量
+ REPO_URL=${https://github.com/coolsnowwolf/lede}
+
 # 单独下载GitHub文件夹
 svn_export() {
 	# 参数1是分支名, 参数2是子目录, 参数3是目标目录, 参数4仓库地址
@@ -88,7 +91,7 @@ sudo apt-get -y install $(awk '{print $1}' DIY/env)                       ## 安
 # 下载Lean源码；
 if [ ! -d "./$lede_path" ];then      # 如果本地不存在，就在线下载（此判断是反方式）；
     print_yellow "***下载Lean大源码***"
-	git clone --depth 1 https://github.com/coolsnowwolf/lede $lede_path
+	git clone --depth 1 $REPO_URL $lede_path
 else
     print_green "***lede源码目录已存在***"
 fi
