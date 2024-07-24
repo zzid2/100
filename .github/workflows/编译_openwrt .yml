@@ -176,9 +176,8 @@ jobs:
          echo "NAME2=Official_" >> $GITHUB_ENV
         fi
         
-        ## 终端添加中文
         sudo apt-get install -y language-pack-zh-hans                                    # 安装中文语言包
-        echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV                                           # 加入中文语言包 的变量，会持续显示中文语言；
+        echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV                                           # 加入中文语言包 的变量，会全部输出中文语言；
         
         
     - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
@@ -232,6 +231,7 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive      ## 非交互模式
       run: |
+        pwd && ls                                                                        # 显示当前步骤的路径和所有文件和文件夹；
         
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo -E apt-get -qq update -y
@@ -259,9 +259,11 @@ jobs:
     - name: 下载${{matrix.target}}源码                 ## Clone source code
       working-directory: /workdir                      ## 指定 执行工作目录为新创建的“workdir”目录，Lede源码也存放在此下 /workdir/openwrt
       run: |
+        pwd && ls                                                     # 显示当前步骤的路径和所有文件和文件夹；
         
-        # pwd && ls                                                     # 显示当前步骤的路径和所有文件和文件夹；
-        # df -hT $PWD                                                   # 显示当前磁盘使用情况
+        df -hT $PWD                                                   # 显示当前磁盘使用情况
+        ## 翻译：  Size（总大小），Used（已用），Avail（可用），Use%（已使用百分比）
+        ## 清理后   73G              21G            52G            29%
         
         git clone $REPO_URL -b $REPO_BRANCH openwrt                   # 下载源码，文件夹目录改为“openwrt”
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt             # 下载源码目录 /workdir/openwrt 强制建立软连接到 主仓库目录下 home/runner/work/仓库名称/仓库名称/openwrt 目录；
@@ -292,6 +294,7 @@ jobs:
           
     - name: 加载DIY_1脚本                              ## Load custom feeds
       run: |
+        pwd && ls                                      # 显示当前步骤的路径和所有文件和文件夹；
                 
         cp -Rf `find ./ -maxdepth 1 -type d ! -path './openwrt' ! -path './'` openwrt               # 复制当前 build “等所有文件（包含机型内所有DIY文件）” 至 openwrt目录下，
         
@@ -311,6 +314,7 @@ jobs:
         
     - name: 加载DIY_2脚本                    ## Load custom configuration
       run: |
+        pwd && ls                            # 显示当前步骤的路径和所有文件和文件夹；
         
         cd openwrt                           # 进入“openwrt”源码目录
         
@@ -433,6 +437,7 @@ jobs:
     - name: 下载DL库                             ## Download package
       id: package
       run: |
+        pwd && ls                                # 显示当前步骤的路径和所有文件和文件夹；
         
         cd openwrt                               # 进入“openwrt”源码目录
         
@@ -445,9 +450,11 @@ jobs:
         make -j1 download V=s                    # 再次执行下载DL库
         
         
+        
     - name: 开始编译固件                         ## Compile the firmware
       id: compile
       run: |
+        pwd && ls                                # 显示当前步骤的路径和所有文件和文件夹；
         
         cd openwrt                               # 进入“openwrt”源码目录
                 
@@ -460,7 +467,7 @@ jobs:
         
         
         
-        ## 根据编译后.config配置文件判断变量
+        ## 根据.config配置文件判断变量
         DEVICE=$(egrep -o "CONFIG_TARGET.*DEVICE.*=y" .config | sed -r 's/.*(.*)=y/\0/')            # DEVICE  = 固件机型的变量（在.config配置文件中得出）
         DEVICE2=$(egrep -o "CONFIG_TARGET.*_64_Generic=y" .config | sed -r 's/.*(.*)=y/\0/')        # DEVICE2 = 固件平台的变量（在.config配置文件中得出）如：X86、
         if [ $DEVICE == "CONFIG_TARGET_x86_64_DEVICE_generic=y" ]; then                             # 当固件机型含generic时，输出变量=      小写generic = DEVICE 变量 /= NAME1 （固件平台“x86-64”）
@@ -487,7 +494,7 @@ jobs:
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'                 # 判断 id: compile 如果输出成功，就执行上传。
       with:
         name: Bin_${{ env.NAME2 }}${{ env.NAME1 }}_${{ env.date }}     # 文件名称
-        path: openwrt/bin   # bin目录路径
+        path: openwrt/bin   # 文件路径
 
 
     # - name: N1云脚本打包    # 将 Armvirt 打包为 OpenWrt
@@ -504,6 +511,8 @@ jobs:
 
     - name: 编译N1机型时,打包（N1、微加云、贝壳云、我家云、S9xxx）固件
       run: |
+        pwd && ls                                               # 显示当前步骤的路径和所有文件和文件夹；
+        
         
         ## 已删库
         if [ ${{matrix.target}} == "lede_N11" -o ${{matrix.target}} == "Project_N11" ];then                    # 当编译N1机型目录时，复制N1固件到打包目录下，
@@ -571,7 +580,7 @@ jobs:
             
             rm -rf $GITHUB_WORKSPACE/N1opt                                                                   ## 已打包完成，删除N1打包源码
         else
-            echo "***未选择N1机型，跳过打包步骤***"
+            echo "***N1packaging源码目录已存在***"
             
         fi
         
@@ -581,26 +590,27 @@ jobs:
     - name: 整理文件                           ## Organize files
       id: organizer
       run: |
+        pwd && ls                              # 显示当前步骤的路径和所有文件和文件夹；
         
-        mkdir config                                                                                  # 创建config文件夹，只存放.config配置文件；
-        find openwrt/bin/targets/ -name "*config.buildinfo*" | xargs -i mv -f {} config               # 搜索 输出固件目录中“config.buildinfo”文件，并移动至刚创建的 config 文件夹内 （-f =强制移动）
+        mkdir config                                                                                  # 创建config文件夹
+        find openwrt/bin/targets/ -name "*config.buildinfo*" | xargs -i mv -f {} config               # 搜索目录中“config.buildinfo”文件，并移动至刚创建的 config 文件夹内 （-f =强制移动）
         
-        if [ -n "$(ls -A "openwrt/bin/targets/x86" 2>/dev/null)" ]; then                              # 判断 只搜索X86固件的核心
-         find openwrt/bin/targets/x86/* -name "*kernel*" | xargs -i mv -f {} openwrt/bin/targets      # 搜索 输出固件目录中含有“kernel”名称的核心文件 并移动至targets目录内（只搜索X86固件的核心）
+        if [ -n "$(ls -A "openwrt/bin/targets/x86" 2>/dev/null)" ]; then                              # 搜索含有“kernel”名称的核心文件 并移动至targets目录内（只搜索X86固件的核心）
+         find openwrt/bin/targets/x86/* -name "*kernel*" | xargs -i mv -f {} openwrt/bin/targets
         fi
         
         cd openwrt/bin/targets/*/*                                                                     # 切换到固件输出目录下
         
-        rm -rf packages && mkdir packages                                                              # 删除“packages”文件夹，再新创建“packages”文件夹（临时存放下面多余的文件，等会删除）
+        rm -rf packages && mkdir packages                                                              # 删除“packages”文件夹，再新创建“packages”文件夹（存放无用的文件，等会删除）
         find -name "*buildinfo*" | xargs -i mv -f {} packages                                          # 搜索“buildinfo”        并移动至新创建的“packages”文件夹内
-        find -name "*manifest*" | xargs -i mv -f {} packages                                           # 搜索“manifest”         并移动至新创建的“packages”文件夹内
-        find -name "*profiles*" | xargs -i mv -f {} packages                                           # 搜索“profiles”         并移动至新创建的“packages”文件夹内
         find -name "*sha256sums*" | xargs -i mv -f {} packages                                         # 搜索“sha256sums”       并移动至新创建的“packages”文件夹内
+        find -name "*manifest*" | xargs -i mv -f {} packages                                           # 搜索“manifest”         并移动至新创建的“packages”文件夹内
         find -name "*vmlinuz*" | xargs -i mv -f {} packages                                            # 搜索“vmlinuz”          并移动至新创建的“packages”文件夹内
         find -name "*Image*" | xargs -i mv -f {} packages                                              # 搜索“Image”            并移动至新创建的“packages”文件夹内
+        find -name "*profiles*" | xargs -i mv -f {} packages                                           # 搜索“profiles”         并移动至新创建的“packages”文件夹内
         rm -rf packages                                                                                # 删除“packages”文件夹，只保留重要固件镜像
         
-        echo "FIRMWARE=$PWD" >> $GITHUB_ENV                                                            # 当前 pwd 执行目录（固件输出的目录），变量为：FIRMWARE
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV                                                            # = $PWD命令，固件输出的目录 变量为：FIRMWARE
         echo "status=success" >>$GITHUB_OUTPUT                                                         # 假如状态反馈成功，则输出到变量
         
         
@@ -610,16 +620,16 @@ jobs:
       if: steps.organizer.outputs.status == 'success' && env.UPLOAD_CONFIG == 'true' && !cancelled()
       with:
         name: .config_${{ env.NAME2 }}${{ env.NAME1 }}
-        path: ./config                       ## 当前目录的 config 文件夹
+        path: ./config              # config/.config 第20次
         
         
         
-    - name: 上传dl库到github空间             ## Upload firmware directory
+    - name: 上传固件到github空间             ## Upload firmware directory
       uses: actions/upload-artifact@main     ## https://github.com/actions/upload-artifact
       if: steps.organizer.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true'
       with:
         name: firmware_${{ env.NAME2 }}${{ env.NAME1 }}_${{ env.date }}
-        path: ${{ env.FIRMWARE }}                     ## dl库目录路径，   如果上传固件改为：${{ env.FIRMWARE }} 
+        path: ${{ env.FIRMWARE }}            ## 上传编译后列表中的固件
         
         
         
