@@ -132,7 +132,7 @@ fi
 
 cd $lede_path   #---删除 luci-app目录内插件（自己整理的源）
 if [ -d "$lede_path/feeds/luciapp" ];then   # 如果存在，就删除以下文件
-	print_error "***删除插件***   feeds/luciapp "
+	print_error "***删除插件***   feeds/luciapp（自己整理的源） "
 	cd feeds/luciapp                      # 进入 LEDE源码内luciapp目录内；
 
 	rm -rf .git							  # 删除多余的git目录
