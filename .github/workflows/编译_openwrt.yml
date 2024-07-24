@@ -28,15 +28,17 @@ on:
         required: false
         default: 'release'         ## 输入：release=开启 actions=关闭
         
-        
-#  schedule:                        ## 定时触发开始编译(时间设置请看定时编译说明)
-#    - cron: 30 8 */5 * *           ## 每间隔5天，在早上8.30执行
+  
+  # 对齐
+  # schedule:                        ## 定时触发开始编译(时间设置请看定时编译说明)
+    # - cron: 30 8 */5 * *           ## 每间隔5天，在早上8.30执行
+  
+  
+  # 对齐
+  # watch:                           ## 点☆Star触发开始编译
+    # types: started
 
-
-#  watch:                           ## 点☆Star触发开始编译
-#    types: started
-
-
+  # 对齐
   # push:                             ## 修改任意代码（或指定文件） 触发编译
     # branches:                       ## 当分支代码出现“修改变动时” 触发编译
       # - master                      ## 默认是主分支代码变动时，触发编译
@@ -44,8 +46,9 @@ on:
       # - '.github/workflows/编译_openwrt.yml'               ## 默认是diy.config文件变动时 触发编译
       
       
-#  release:                         ## release发布触发开始编译(只是一个触发条件,不会发布的,又麻烦,没卵用,不用研究)
-#    types: published
+  # 对齐
+  # release:                         ## release发布触发开始编译(只是一个触发条件,不会发布的,又麻烦,没卵用,不用研究)
+    # types: published
 
 
 
