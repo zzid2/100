@@ -29,24 +29,24 @@ on:
         default: 'release'         ## 输入：release=开启 actions=关闭
         
   
-  # 对齐
+  ## 对齐
   # schedule:                        ## 定时触发开始编译(时间设置请看定时编译说明)
     # - cron: 30 8 */5 * *           ## 每间隔5天，在早上8.30执行
   
   
-  # 对齐
+  ## 对齐
   # watch:                           ## 点☆Star触发开始编译
     # types: started
 
-  # 对齐
-  # push:                             ## 修改任意代码（或指定文件） 触发编译
+  ## 对齐
+  push:                             ## 修改任意代码（或指定文件） 触发编译
     # branches:                       ## 当分支代码出现“修改变动时” 触发编译
       # - master                      ## 默认是主分支代码变动时，触发编译
-    # paths:                          ## 当指定文件“修改变动时” 触发编译
-      # - '.github/workflows/编译_openwrt.yml'               ## 默认是diy.config文件变动时 触发编译
+    paths:                          ## 当指定文件“修改变动时” 触发编译
+      - '.github/workflows/编译_openwrt.yml'               ## 默认是diy.config文件变动时 触发编译
       
       
-  # 对齐
+  ## 对齐
   # release:                         ## release发布触发开始编译(只是一个触发条件,不会发布的,又麻烦,没卵用,不用研究)
     # types: published
 
@@ -99,7 +99,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [lede_G-DOCK]                ## ←编译指定机型 “就是文件夹名称”，多选用英文逗号隔开可以同时编译；
+        target: [lede_x86]                ## ←编译指定机型 “就是文件夹名称”，多选用英文逗号隔开可以同时编译；
         # 目前可以选机型：openwrt,lede_G-DOCK,lede_hiwifi_HC5861,lede_linksys_Wrt32x,lede_N1,lede_x86
 
     
@@ -138,12 +138,13 @@ jobs:
         pwd && ls                                                                        # 显示当前步骤的路径和所有文件和文件夹；
         df -hT $PWD                                                                      # 显示当前磁盘使用情况
         
-        if [ -f "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini" ]; then      # 判断 优先加载 lede_x86/settings.ini 文件,其次加载 DIY/settings.ini 文件。
-            source "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini"
+        if [ -f "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini" ]; then      # 判断 如果机型目录内没有 settings.ini 文件, 移动DIY目录内的文件 并加载它。
+            echo "注意: 使用机型目录内的 settings.ini 文件"
         else
-            cp -rf ${GITHUB_WORKSPACE}/build/DIY/settings.ini ${GITHUB_WORKSPACE}/build/${{matrix.target}}
-            source "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini"
+            echo "注意: 移动DIY目录下的 settings.ini 文件至机型目录内"
+            mv ${GITHUB_WORKSPACE}/build/DIY/settings.ini ${GITHUB_WORKSPACE}/build/${{matrix.target}}
         fi
+        source "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini"
         
         ## settings.ini配置变量
         echo "REPO_URL=${REPO_URL}" >> $GITHUB_ENV                                       # = 源码地址
@@ -264,7 +265,7 @@ jobs:
     - name: 下载${{matrix.target}}源码                 ## Clone source code
       working-directory: /workdir                      ## 指定 执行工作目录为新创建的“workdir”目录，Lede源码也存放在此下 /workdir/openwrt
       run: |
-        git clone $REPO_URL -b $REPO_BRANCH openwrt                   # 下载源码，文件夹目录改为“openwrt”
+        git clone $REPO_URL -b $REPO_BRANCH openwrt                   # 下载源码，文件夹命名为：“openwrt”
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt             # 下载源码目录 /workdir/openwrt 强制建立软连接到 主仓库目录下 home/runner/work/仓库名称/仓库名称/openwrt 目录；
         
         cd openwrt                                                                      # 首次进入”软连接“源码 的执行目录“openwrt”
@@ -293,19 +294,18 @@ jobs:
           
     - name: 加载DIY_1脚本                              ## Load custom feeds
       run: |
-        cp -Rf `find ./ -maxdepth 1 -type d ! -path './openwrt' ! -path './'` openwrt               # 复制当前 build “等所有文件（包含机型内所有DIY文件）” 至 openwrt目录下，
+        cp -Rf `find ./ -maxdepth 1 -type d ! -path './openwrt' ! -path './'` openwrt               # 只复制当前 build “目录内的所有文件 至 openwrt目录下（-R 不复制目录） ，
         
         cd openwrt                                                                                  # 后续执行命令默认进入：“openwrt”源码目录
         
-        if [ -f "build/${{matrix.target}}/$DIY_P1_SH" ]; then                                       # 判断diy-part1  优先加载 lede_x86/diy-part1 文件,其次加载 build/DIY/diy-part1 文件。
-          chmod +x build/${{matrix.target}}/$DIY_P1_SH
-          /bin/bash "build/${{matrix.target}}/$DIY_P1_SH"
+        if [ -f "build/${{matrix.target}}/$DIY_P1_SH" ]; then                                       # 判断 如果机型目录内没有 diy-part1 脚本, 复制DIY目录内的脚本并 运行它。
+          echo "注意: 使用机型目录内的 diy-part1 脚本"
         else
+          echo "注意: 移动DIY目录下的 diy-part1 脚本至机型目录内"
           mv build/DIY/$DIY_P1_SH build/${{matrix.target}}
-          chmod +x build/${{matrix.target}}/$DIY_P1_SH
-          /bin/bash "build/${{matrix.target}}/$DIY_P1_SH"
-        
         fi
+        chmod +x build/${{matrix.target}}/$DIY_P1_SH
+        /bin/bash "build/${{matrix.target}}/$DIY_P1_SH"
         
         
         
@@ -313,14 +313,15 @@ jobs:
       run: |
         cd openwrt                           # 进入“openwrt”源码目录
         
-        if [ -f "build/${{matrix.target}}/$DIY_P2_SH" ]; then                                       # 判断diy-part2  优先加载 lede_x86/diy-part2 文件,其次加载 build/DIY/diy-part2 文件。
-          chmod +x build/${{matrix.target}}/$DIY_P2_SH
-          /bin/bash "build/${{matrix.target}}/$DIY_P2_SH"
+        if [ -f "build/${{matrix.target}}/$DIY_P2_SH" ]; then                                       # 判断 如果机型目录内没有 diy-part2 脚本, 复制DIY目录内的脚本并 运行它。
+          echo "注意: 使用机型目录内的 diy-part2 脚本"
         else
+          echo "注意: 移动DIY目录下的 diy-part2 脚本至机型目录内"
           mv build/DIY/$DIY_P2_SH build/${{matrix.target}}
-          chmod +x build/${{matrix.target}}/$DIY_P2_SH
-          /bin/bash "build/${{matrix.target}}/$DIY_P2_SH"
         fi
+        chmod +x build/${{matrix.target}}/$DIY_P2_SH
+        /bin/bash "build/${{matrix.target}}/$DIY_P2_SH"
+        
         
         if [ -f "build/${{matrix.target}}/$DIY_OEM_SH" ]; then                                      # 个性化配置OEM
             chmod +x build/${{matrix.target}}/$DIY_OEM_SH
@@ -328,7 +329,8 @@ jobs:
         fi
             
             
-        if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                       # 判断diy目录  优先加载 lede_x86/diy 目录，其次加载 build/DIY/diy 目录；最后复制到openwrt源码内。 
+        if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                       # 判断diy目录  优先复制机型目录内的diy目录，如果没有 再复制 build/DIY/diy 文件目录至 openwrt 源码内。 
+            echo "注意: 复制机型目录内的 diy目录 "
             cp -rf build/${{matrix.target}}/diy/* ./
         else
             if [ -d "build/DIY/diy" ]; then
@@ -339,7 +341,8 @@ jobs:
         fi
             
             
-        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                     # 判断files目录  （-n 表示有非空字符文件，则执行 then 后面的命令）
+        if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                     # 判断 openwrt/files目录  （-n 表示如果有非空字符文件（就是有文件字符），则执行 then 后面的命令）
+            echo "注意: 复制机型目录内的 files目录 "
             cp -rf build/${{matrix.target}}/files files
             chmod -R 777 build/${{matrix.target}}/files/* ./
         else
@@ -350,6 +353,8 @@ jobs:
                 echo "错误: files目录不存在"
             fi
         fi
+        
+        
         
         
         if [ -n "$(ls -A "build/${{matrix.target}}/patches" 2>/dev/null)" ]; then                   # 判断patches目录
@@ -616,8 +621,8 @@ jobs:
       uses: actions/upload-artifact@main     ## https://github.com/actions/upload-artifact
       if: steps.organizer.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true'
       with:
-        name: dl库_${{ env.NAME2 }}${{ env.NAME1 }}_${{ env.date }}      ## firmware
-        path: openwrt/dl                     ## dl库目录路径，   如果上传固件改为：${{ env.FIRMWARE }} 
+        name: dl库_${{ env.NAME2 }}${{ env.NAME1 }}_${{ env.date }}      ## 如果上传固件改为：firmware
+        path: openwrt/dl                     ## dl库目录路径，              如果上传固件改为：${{ env.FIRMWARE }} 
         
         
         
