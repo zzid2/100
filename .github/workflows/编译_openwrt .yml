@@ -619,7 +619,7 @@ jobs:
       if: steps.organizer.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true'
       with:
         name: firmware_${{ env.NAME2 }}${{ env.NAME1 }}_${{ env.date }}
-        path: openwrt/dl                     ## dl库目录路径，   如果上传固件改为：${{ env.FIRMWARE }} 
+        path: ${{ env.FIRMWARE }}                     ## dl库目录路径，   如果上传固件改为：${{ env.FIRMWARE }} 
         
         
         
