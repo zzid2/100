@@ -176,8 +176,9 @@ jobs:
          echo "NAME2=Official_" >> $GITHUB_ENV
         fi
         
+        ## 终端添加中文
         sudo apt-get install -y language-pack-zh-hans                                    # 安装中文语言包
-        echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV                                           # 加入中文语言包 的变量，会全部输出中文语言；
+        echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV                                           # 加入中文语言包 的变量，会持续显示中文语言；
         
         
     - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
@@ -231,8 +232,6 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive      ## 非交互模式
       run: |
-        pwd && ls                                                                        # 显示当前步骤的路径和所有文件和文件夹；
-        
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo -E apt-get -qq update -y
         sudo -E apt-get -qq install -y build-essential asciidoc binutils bzip2 gawk gettext git libc6-dev libncurses5 libtinfo-dev libtinfo5 ncurses-doc libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
@@ -259,11 +258,8 @@ jobs:
     - name: 下载${{matrix.target}}源码                 ## Clone source code
       working-directory: /workdir                      ## 指定 执行工作目录为新创建的“workdir”目录，Lede源码也存放在此下 /workdir/openwrt
       run: |
-        pwd && ls                                                     # 显示当前步骤的路径和所有文件和文件夹；
-        
-        df -hT $PWD                                                   # 显示当前磁盘使用情况
-        ## 翻译：  Size（总大小），Used（已用），Avail（可用），Use%（已使用百分比）
-        ## 清理后   73G              21G            52G            29%
+        # pwd && ls                                                     # 显示当前步骤的路径和所有文件和文件夹；
+        # df -hT $PWD                                                   # 显示当前磁盘使用情况
         
         git clone $REPO_URL -b $REPO_BRANCH openwrt                   # 下载源码，文件夹目录改为“openwrt”
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt             # 下载源码目录 /workdir/openwrt 强制建立软连接到 主仓库目录下 home/runner/work/仓库名称/仓库名称/openwrt 目录；
@@ -294,7 +290,6 @@ jobs:
           
     - name: 加载DIY_1脚本                              ## Load custom feeds
       run: |
-        pwd && ls                                      # 显示当前步骤的路径和所有文件和文件夹；
                 
         cp -Rf `find ./ -maxdepth 1 -type d ! -path './openwrt' ! -path './'` openwrt               # 复制当前 build “等所有文件（包含机型内所有DIY文件）” 至 openwrt目录下，
         
@@ -314,7 +309,6 @@ jobs:
         
     - name: 加载DIY_2脚本                    ## Load custom configuration
       run: |
-        pwd && ls                            # 显示当前步骤的路径和所有文件和文件夹；
         
         cd openwrt                           # 进入“openwrt”源码目录
         
@@ -437,7 +431,6 @@ jobs:
     - name: 下载DL库                             ## Download package
       id: package
       run: |
-        pwd && ls                                # 显示当前步骤的路径和所有文件和文件夹；
         
         cd openwrt                               # 进入“openwrt”源码目录
         
@@ -454,7 +447,6 @@ jobs:
     - name: 开始编译固件                         ## Compile the firmware
       id: compile
       run: |
-        pwd && ls                                # 显示当前步骤的路径和所有文件和文件夹；
         
         cd openwrt                               # 进入“openwrt”源码目录
                 
@@ -467,7 +459,7 @@ jobs:
         
         
         
-        ## 根据.config配置文件判断变量
+        ## 根据编译后.config配置文件判断变量
         DEVICE=$(egrep -o "CONFIG_TARGET.*DEVICE.*=y" .config | sed -r 's/.*(.*)=y/\0/')            # DEVICE  = 固件机型的变量（在.config配置文件中得出）
         DEVICE2=$(egrep -o "CONFIG_TARGET.*_64_Generic=y" .config | sed -r 's/.*(.*)=y/\0/')        # DEVICE2 = 固件平台的变量（在.config配置文件中得出）如：X86、
         if [ $DEVICE == "CONFIG_TARGET_x86_64_DEVICE_generic=y" ]; then                             # 当固件机型含generic时，输出变量=      小写generic = DEVICE 变量 /= NAME1 （固件平台“x86-64”）
@@ -511,8 +503,6 @@ jobs:
 
     - name: 编译N1机型时,打包（N1、微加云、贝壳云、我家云、S9xxx）固件
       run: |
-        pwd && ls                                               # 显示当前步骤的路径和所有文件和文件夹；
-        
         
         ## 已删库
         if [ ${{matrix.target}} == "lede_N11" -o ${{matrix.target}} == "Project_N11" ];then                    # 当编译N1机型目录时，复制N1固件到打包目录下，
@@ -580,7 +570,7 @@ jobs:
             
             rm -rf $GITHUB_WORKSPACE/N1opt                                                                   ## 已打包完成，删除N1打包源码
         else
-            echo "***N1packaging源码目录已存在***"
+            echo "***未选择N1机型，跳过打包步骤***"
             
         fi
         
@@ -590,7 +580,6 @@ jobs:
     - name: 整理文件                           ## Organize files
       id: organizer
       run: |
-        pwd && ls                              # 显示当前步骤的路径和所有文件和文件夹；
         
         mkdir config                                                                                  # 创建config文件夹
         find openwrt/bin/targets/ -name "*config.buildinfo*" | xargs -i mv -f {} config               # 搜索目录中“config.buildinfo”文件，并移动至刚创建的 config 文件夹内 （-f =强制移动）
