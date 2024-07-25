@@ -98,7 +98,7 @@ if [ ! -d "./$lede_path" ];then      # 如果本地不存在，就在线下载�
 	git clone --depth 1 $REPO_URL $lede_path
 else
     print_green "***lede源码目录已存在***"
-	exit 0                                                                ## lede源码目录已存在，退出脚本！
+	exit 1                                                                ## lede源码目录已存在，退出脚本！
 fi
 
 
