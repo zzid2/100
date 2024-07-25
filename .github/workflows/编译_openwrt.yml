@@ -265,7 +265,7 @@ jobs:
     - name: 下载${{matrix.target}}源码                 ## Clone source code
       working-directory: /workdir                      ## 指定 执行工作目录为新创建的“workdir”目录，Lede源码也存放在此下 /workdir/openwrt
       run: |
-        git clone $REPO_URL -b $REPO_BRANCH openwrt                   # 下载源码，文件夹命名为：“openwrt”
+        git clone -b $REPO_BRANCH $REPO_URL openwrt                   # 克隆完整仓库的分支和历史记录（本地编译不推荐），文件夹命名为：“openwrt”
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt             # 下载源码目录 /workdir/openwrt 强制建立软连接到 主仓库目录下 home/runner/work/仓库名称/仓库名称/openwrt 目录；
         
         cd openwrt                                                                      # 首次进入”软连接“源码 的执行目录“openwrt”

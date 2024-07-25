@@ -92,7 +92,7 @@ sudo apt-get -y install $(awk '{print $1}' DIY/env)                       ## 安
 # 下载Lean源码；
 if [ ! -d "./$lede_path" ];then      # 如果本地不存在，就在线下载（此判断是反方式）；
     print_yellow "***下载Lean大源码***"
-	git clone $REPO_URL -b $REPO_BRANCH $lede_path   # git clone --depth 1 $REPO_URL $lede_path
+	git clone --depth 1 $REPO_URL $lede_path
 else
     print_green "***lede源码目录已存在***"
 fi
