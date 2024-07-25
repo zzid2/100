@@ -57,17 +57,12 @@ svn_export() {
 	cd "$2" && cp -a . "$TGT_DIR/"
 }
 
-# 输出当前目录，以便调试
-echo "当前目录：$(pwd)"
-# 修改部分开始
+
+# 如果本地存在“lede源码”目录，就退出脚本
 if [ -d "$lede_path" ]; then
-    # 如果本地存在，打印消息并退出脚本
-    print_green "***lede源码目录已存在***"
+    print_green "***lede源码目录已存在，请进入lede目录内执行“make.sh”脚本***"
     exit 1
 fi
-
-
-
 
 
 cd $project_path                                                                ## 切换到仓库项目的主目录内
@@ -106,23 +101,13 @@ sudo apt-get -y install $(awk '{print $1}' DIY/env)                       ## 安
 
 
 # 下载Lean源码；
-if [ ! -d "./$lede_path" ]; then  # 如果本地不存在，就在线下载
-    print_yellow "***下载Lean大源码***"
-    git clone --depth 1 $REPO_URL $lede_path
-else
-    print_green "***lede源码目录已存在***"
-    exit 1  ## lede源码目录已存在，退出脚本！
-fi
-
-
-# 下载Lean源码；
-# if [ -d "./$lede_path" ];then      # 如果本地不存在，就在线下载
-	# print_green "***lede源码目录已存在***"
+if [ -d "./$lede_path" ];then      # 如果本地不存在，就在线下载
+	print_green "***lede源码目录已存在***"
 	# exit 1                                                                ## lede源码目录已存在，退出脚本！
-# else
-    # print_yellow "***下载Lean大源码***"
-	# git clone --depth 1 $REPO_URL $lede_path
-# fi
+else
+    print_yellow "***下载Lean大源码***"
+	git clone --depth 1 $REPO_URL $lede_path
+fi
 
 
 cd $lede_path                                                                     ## 进入Lede源码目录内并执行操作
