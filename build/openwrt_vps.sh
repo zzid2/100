@@ -37,7 +37,7 @@ print_yellow() {                          ## 打印黄色字体
 
 
 # 环境变量
- REPO_URL=${https://github.com/coolsnowwolf/lede}
+ REPO_URL="https://github.com/coolsnowwolf/lede"
 
 # 单独下载GitHub文件夹
 svn_export() {
