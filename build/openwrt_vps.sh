@@ -57,13 +57,16 @@ svn_export() {
 	cd "$2" && cp -a . "$TGT_DIR/"
 }
 
-
+# 输出当前目录，以便调试
 echo "当前目录：$(pwd)"
-if [ -d "$(pwd)/$lede_path" ]; then
+# 修改部分开始
+if [ -d "$lede_path" ]; then
     # 如果本地存在，打印消息并退出脚本
     print_green "***lede源码目录已存在***"
     exit 1
 fi
+
+
 
 
 
