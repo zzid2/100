@@ -92,6 +92,16 @@ sudo apt-get -y install $(awk '{print $1}' DIY/env)                       ## 安
 # sudo apt-get -y install $(cat DIY/env)
 
 
+
+if [ -d "$(pwd)/$lede_path" ]; then
+    # 如果本地存在，打印消息并退出脚本
+    print_green "***lede源码目录已存在***"
+    exit 1
+fi
+
+
+
+
 # 下载Lean源码；
 if [ -d "./$lede_path" ];then      # 如果本地不存在，就在线下载
 	print_green "***lede源码目录已存在***"
