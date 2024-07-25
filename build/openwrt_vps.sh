@@ -1,6 +1,4 @@
 #!/bin/bash
-project_path=$(cd `dirname $0`; pwd)     ## 当前脚本目录= （仓库目录）将当前脚本所在的目录路径 赋于成变量；
-lede_path="$project_path/lede"           ## 赋于成变量= lede源码目录
 
 #--------------------------------------------------------------
 #	系统环境: Ubuntu-20.04.4-LTS
@@ -22,6 +20,16 @@ lede_path="$project_path/lede"           ## 赋于成变量= lede源码目录
 #--------------------------------------------------------------------------------------------
 
 
+# 环境变量
+ project_path=$(cd `dirname $0`; pwd)                ## 当前脚本目录= （仓库目录）将当前脚本所在的目录路径 赋于成变量；
+ lede_path="$project_path/lede"                      ## 赋于成变量= lede源码目录
+ 
+ REPO_URL="https://github.com/coolsnowwolf/lede"     ## Lede源码
+ REPO_BRANCH="master"                                ## master分支
+ REPO_MAIN="main"                                    ## main分支
+ CangKu="zzid2/100"                                  ## 作者仓库（如果更换仓库，这里需要修改）
+
+
 # 字体颜色配置
 print_error() {                           ## 打印红色字体
     echo -e "\033[31m$1\033[0m"
@@ -35,13 +43,6 @@ print_yellow() {                          ## 打印黄色字体
     echo -e "\033[33m$1\033[0m"
 }
 
-
-# 环境变量
- REPO_URL="https://github.com/coolsnowwolf/lede"     ## Lede源码
- REPO_BRANCH="master"                                ## master分支
- REPO_MAIN="main"                                    ## main分支
- CangKu="zzid2/100"                                  ## 作者仓库（如果更换仓库，这里需要修改）
- 
  
 # 单独下载GitHub文件夹
 svn_export() {
@@ -56,13 +57,6 @@ svn_export() {
 	git checkout "remotes/origin/$1" -- "$2" && \
 	cd "$2" && cp -a . "$TGT_DIR/"
 }
-
-
-# 如果本地存在“lede源码”目录，就退出脚本
-if [ -d "$lede_path" ]; then
-    print_green "***lede源码目录已存在，请进入lede目录内执行“make.sh”脚本***"
-    exit 1
-fi
 
 
 cd $project_path                                                                ## 切换到仓库项目的主目录内
@@ -91,7 +85,7 @@ if [ -f "DIY/env" ];then   # 如果本地不存在，就在线下载；
 else
 	print_yellow "***下载环境文件env***"
 	mkdir -p DIY                     # 新建DIY目录；
-	curl -L https://raw.githubusercontent.com/$CangKu/$REPO_MAIN/build/DIY/env -o DIY/env                       ## 下载环境文件env
+	curl -Ls https://raw.githubusercontent.com/$CangKu/$REPO_MAIN/build/DIY/env -o DIY/env                       ## 下载环境文件env
 fi
 
 
@@ -99,14 +93,19 @@ sudo apt-get -y install $(awk '{print $1}' DIY/env)                       ## 安
 # sudo apt-get -y install $(cat DIY/env)
 
 
-
-# 下载Lean源码；
-if [ -d "./$lede_path" ];then      # 如果本地不存在，就在线下载
-	print_green "***lede源码目录已存在***"
-	# exit 1                                                                ## lede源码目录已存在，退出脚本！
+# 下载Lean源码
+if [ -d "$lede_path" ]; then         # 如果本地不存在，就在线下载
+    print_green " ***退出脚本：请执行“make.sh”进行二次编译！！！*** "
+    exit 0           # 正常退出
 else
     print_yellow "***下载Lean大源码***"
-	git clone --depth 1 $REPO_URL $lede_path
+    git clone --depth 1 $REPO_URL $lede_path
+    if [ $? -eq 0 ]; then
+        print_green "***lede源码下载完成***"
+    else
+        print_error "***lede源码下载失败***"
+        exit 1      # 异常退出
+    fi
 fi
 
 

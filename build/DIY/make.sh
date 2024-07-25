@@ -1,7 +1,10 @@
 #!/bin/bash
-lede_path=$(cd `dirname $0`; pwd)         ## 当前脚本目录= （Lede目录）将当前脚本所在的目录路径 赋于成变量；
-cd $lede_path                             ## 进入（Lede目录）内并执行操作；
 
+# 环境变量
+ lede_path=$(cd `dirname $0`; pwd)         ## 当前脚本目录= （Lede目录）将当前脚本所在的目录路径 赋于成变量；
+ cd $lede_path                             ## 进入（Lede目录）内并执行操作；
+ date=$(date "+%Y.%m.%d-%H%M")
+ date1=$(date "+%Y年%m月%d号-%H点%M分")
 
 # 字体颜色配置
 print_error() {                           ## 打印红色字体
@@ -15,11 +18,6 @@ print_green() {                           ## 打印绿色字体
 print_yellow() {                          ## 打印黄色字体
     echo -e "\033[33m$1\033[0m"
 }
-
-
-# 时间变量
- date=$(date "+%Y.%m.%d-%H%M")
- date1=$(date "+%Y年%m月%d号-%H点%M分")
 
 
 # 更新源码
