@@ -103,13 +103,13 @@ fi
 
 
 # 下载Lean源码；
-if [ -d "./$lede_path" ];then      # 如果本地不存在，就在线下载
-	print_green "***lede源码目录已存在***"
-	exit 1                                                                ## lede源码目录已存在，退出脚本！
-else
-    print_yellow "***下载Lean大源码***"
-	git clone --depth 1 $REPO_URL $lede_path
-fi
+# if [ -d "./$lede_path" ];then      # 如果本地不存在，就在线下载
+	# print_green "***lede源码目录已存在***"
+	# exit 1                                                                ## lede源码目录已存在，退出脚本！
+# else
+    # print_yellow "***下载Lean大源码***"
+	# git clone --depth 1 $REPO_URL $lede_path
+# fi
 
 
 cd $lede_path                                                                     ## 进入Lede源码目录内并执行操作
