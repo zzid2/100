@@ -37,9 +37,12 @@ print_yellow() {                          ## 打印黄色字体
 
 
 # 环境变量
- REPO_URL="https://github.com/coolsnowwolf/lede"
- REPO_BRANCH="master"
-
+ REPO_URL="https://github.com/coolsnowwolf/lede"     ## Lede源码
+ REPO_BRANCH="master"                                ## master分支
+ REPO_MAIN="main"                                    ## main分支
+ CangKu="zzid2/100"                                  ## 作者仓库（如果更换仓库，这里需要修改）
+ 
+ 
 # 单独下载GitHub文件夹
 svn_export() {
 	# 参数1是分支名, 参数2是子目录, 参数3是目标目录, 参数4仓库地址
@@ -81,7 +84,7 @@ if [ -f "DIY/env" ];then   # 如果本地不存在，就在线下载；
 else
 	print_yellow "***下载环境文件env***"
 	mkdir -p DIY                     # 新建DIY目录；
-	curl -L https://raw.githubusercontent.com/zzid2/100/main/build/DIY/env -o DIY/env                       ## 下载环境文件env
+	curl -L https://raw.githubusercontent.com/$CangKu/$REPO_MAIN/build/DIY/env -o DIY/env                       ## 下载环境文件env
 fi
 
 
