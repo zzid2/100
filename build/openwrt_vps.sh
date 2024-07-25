@@ -98,6 +98,7 @@ if [ ! -d "./$lede_path" ];then      # 如果本地不存在，就在线下载�
 	git clone --depth 1 $REPO_URL $lede_path
 else
     print_green "***lede源码目录已存在***"
+	exit 0                                                                ## lede源码目录已存在，退出脚本！
 fi
 
 
@@ -109,7 +110,7 @@ if [ -f "$project_path/DIY/diy-part1.sh" ];then   # 如果本地不存在，就�
 	print_green "***使用本地diy-part1.sh***"
 else
 	print_yellow "***下载diy-part1.sh***"
-	curl -L https://raw.githubusercontent.com/zzid2/100/main/build/DIY/diy-part1.sh -o $project_path/DIY/diy-part1.sh		## 下载diy-part1.sh
+	curl -L https://raw.githubusercontent.com/$CangKu/$REPO_MAIN/build/DIY/diy-part1.sh -o $project_path/DIY/diy-part1.sh		## 下载diy-part1.sh
 fi
 cp -rf $project_path/DIY/diy-part1.sh $lede_path/diy-part1.sh     ## 复制到Lede源码目录内
 bash $lede_path/diy-part1.sh                                      ## Lede源码目录内执行
@@ -121,7 +122,7 @@ if [ -f "$project_path/DIY/diy-part2.sh" ]; then   # 如果本地不存在，就
 	print_green "***使用本地diy-part2.sh***"
 else
 	print_yellow "***下载diy-part2.sh***"
-	curl -L https://raw.githubusercontent.com/zzid2/100/main/build/DIY/diy-part2.sh -o $project_path/DIY/diy-part2.sh		## 下载diy-part2.sh
+	curl -L https://raw.githubusercontent.com/$CangKu/$REPO_MAIN/build/DIY/diy-part2.sh -o $project_path/DIY/diy-part2.sh		## 下载diy-part2.sh
 fi
 cp -rf $project_path/DIY/diy-part2.sh $lede_path/diy-part2.sh     ## 复制到Lede源码目录内
 bash $lede_path/diy-part2.sh                                      ## Lede源码目录内执行
@@ -130,18 +131,13 @@ rm -rf $lede_path/diy-part2.sh
 
 
 # 加载机型配置configs目录；
-if [ -d "$lede_path/configs" ]; then  # 如果本地不存在，就在线下载；
-	print_error "***configs机型目录已经存在***"
+if [ -d "$project_path/DIY/configs" ];then         # 如果本地不存在，就在线下载；
+	print_green "***使用本地configs机型目录***"
 else
-	if [ -d "$project_path/DIY/configs" ];then 
-		print_green "***使用本地configs机型目录***"
-		cp -rv $project_path/DIY/configs $lede_path/configs
-	else
-		print_yellow "***下载configs***"
-		svn_export "main" "build/DIY/configs" "$project_path/DIY/configs" https://github.com/zzid2/100                      ## 下载configs        ## 参数1= 分支名, 参数2= 子目录, 参数3= 目标目录, 参数4= 仓库地址。
-		cp -rv $project_path/DIY/configs $lede_path/configs
-	fi
+	print_yellow "***下载configs***"
+	svn_export "main" "build/DIY/configs" "$project_path/DIY/configs" https://github.com/$CangKu                                ## 下载configs        ## 参数1= 分支名, 参数2= 仓库子目录, 参数3= 本地目标目录, 参数4= 仓库地址。
 fi
+cp -rv $project_path/DIY/configs $lede_path/configs
 
 
 # 复制本地.config文件；
@@ -149,7 +145,7 @@ if [ -f "$project_path/DIY/.config" ]; then       ## 如果本地不存在，就
 	print_green "***使用本地.config配置***"
 else 
 	print_yellow "***下载.config***"
-	curl -L https://raw.githubusercontent.com/zzid2/100/main/build/DIY/.config -o $project_path/DIY/.config                 ## 下载.config
+	curl -L https://raw.githubusercontent.com/$CangKu/$REPO_MAIN/build/DIY/.config -o $project_path/DIY/.config                 ## 下载.config
 fi
 rm -f $lede_path/.config                            ## 先删除源码内默认的.config插件配置文件；
 cp -fv $project_path/DIY/.config $lede_path         ## 复制本地 DIY/.config插件配置文件至lede目录下；
@@ -163,7 +159,7 @@ if [ -f "$project_path/DIY/make.sh" ];then          ## 如果本地存在，直�
 	cp DIY/make.sh $lede_path
     $lede_path/make.sh
 else
-		curl -L https://raw.githubusercontent.com/zzid2/100/main/build/DIY/make.sh -o DIY/make.sh                           ## 下载make.sh编译脚本
+		curl -L https://raw.githubusercontent.com/$CangKu/$REPO_MAIN/build/DIY/make.sh -o DIY/make.sh                           ## 下载make.sh编译脚本
 		cp DIY/make.sh $lede_path
 		
         if [ -f "$lede_path/make.sh" ];then 
