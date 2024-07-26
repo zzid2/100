@@ -86,10 +86,10 @@ env:
   Author: ${{github.actor}}                              ## 提取 Github用户ID，如：zuoweiid
   GITURL: https://github.com/${{github.repository}}      ## 提取 项目仓库地址 = https://github.com +（用户ID + 项目仓库名字），如：zuoweiid/10    ${{github.repository}}=当前仓库
   Run_number: ${{github.run_number}}                     ## 提取 Actions当前运行编号，如#12
-  RED="\033[31m"                         ## 输出红色
-  GREEN="\033[32m"                       ## 输出绿色
-  YELLOW="\033[33m"                      ## 输出黄色
-  RESET="\033[0m"                        ## 重置颜色
+  RED: "\033[31m"                         ## 输出红色
+  GREEN: "\033[32m"                       ## 输出绿色
+  YELLOW: "\033[33m"                      ## 输出黄色
+  RESET: "\033[0m"                        ## 重置颜色
 
 jobs:
   build:                                  ## 运行脚本的备注名称（可更改）
