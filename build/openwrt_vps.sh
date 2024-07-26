@@ -20,16 +20,6 @@
 #--------------------------------------------------------------------------------------------
 
 
-# 环境变量
- project_path=$(cd `dirname $0`; pwd)                ## 当前脚本目录= （仓库目录）将当前脚本所在的目录路径 赋于成变量；
- lede_path="$project_path/lede"                      ## 赋于成变量= lede源码目录
- 
- REPO_URL="https://github.com/coolsnowwolf/lede"     ## Lede源码
- REPO_BRANCH="master"                                ## master分支
- REPO_MAIN="main"                                    ## main分支
- CangKu="zzid2/100"                                  ## 作者仓库（如果更换仓库，这里需要修改）
-
-
 # 字体颜色配置
 print_error() {                           ## 打印红色字体
     echo -e "\033[31m$1\033[0m"
@@ -42,6 +32,16 @@ print_green() {                           ## 打印绿色字体
 print_yellow() {                          ## 打印黄色字体
     echo -e "\033[33m$1\033[0m"
 }
+
+
+# 环境变量
+ project_path=$(cd `dirname $0`; pwd)                ## 当前脚本目录= （仓库目录）将当前脚本所在的目录路径 赋于成变量；
+ lede_path="$project_path/lede"                      ## 赋于成变量= lede源码目录
+ 
+ REPO_URL="https://github.com/coolsnowwolf/lede"     ## Lede源码
+ REPO_BRANCH="master"                                ## master分支
+ REPO_MAIN="main"                                    ## main分支
+ CangKu="zzid2/100"                                  ## 作者仓库（如果更换仓库，这里需要修改）
 
  
 # 单独下载GitHub文件夹
@@ -62,35 +62,24 @@ svn_export() {
 cd $project_path                                                                ## 切换到仓库项目的主目录内
 
 
-# 安装基础环境
-print_yellow "***安装基础环境"
+# 安装编译环境（变量文件env）
+print_yellow "***安装编译环境"
 echo "qq963" | sudo -S apt-get update && apt-get upgrade -y                     ## 更新_软件和系统 免密码执行；
-sudo apt install -y curl git lrzsz progress screen                              ## 安装基础软件
+sudo -E apt-get -qq install -y curl git lrzsz progress screen                   ## 安装基础软件
 
+sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc                                                       ## 删除：sources.list.d 目录、dotnet 目录、android目录、ghc目录。
+sudo -E apt-get -qq update -y && sudo -E apt-get -qq upgrade -y && sudo -E apt-get -qq autoremove -y --purge && sudo -E apt-get -qq clean     ## 更新软件包引、安装软件包、删除无用软件包、清理 APT 缓存。
 
-# N1打包依赖
-print_yellow "***安装N1打包环境"
-sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc -y
-sudo -E apt-get -qq update -y
-sudo -E apt-get -qq install xz-utils btrfs-progs gawk zip unzip curl dosfstools  uuid-runtime -y
-sudo -E apt-get -qq install git  git-core -y
-sudo -E apt-get -qq install pigz -y
-sudo -E apt-get -qq autoremove --purge -y
-sudo -E apt-get -qq clean -y
-
-
-# 安装环境文件（环境文件env）
 if [ -f "DIY/env" ];then   # 如果本地不存在，就在线下载；
 	print_green "***使用本地环境文件env***"
 else
 	print_yellow "***下载环境文件env***"
 	mkdir -p DIY                     # 新建DIY目录；
-	curl -Ls https://raw.githubusercontent.com/$CangKu/$REPO_MAIN/build/DIY/env -o DIY/env                       ## 下载环境文件env
+	curl -Ls https://raw.githubusercontent.com/$CangKu/$REPO_MAIN/build/DIY/env -o DIY/env      ## 下载环境文件env
 fi
+sudo apt-get -y install $(awk '{print $1}' DIY/env)                             ## 安装环境文件env（自动去除"注释"信息）
 
-
-sudo apt-get -y install $(awk '{print $1}' DIY/env)                       ## 安装环境文件env（自动去除"注释"信息）
-# sudo apt-get -y install $(cat DIY/env)
+sudo -E apt-get -qq install -y xz-utils btrfs-progs zip dosfstools uuid-runtime pigz             ## N1固件打包必需要的依赖
 
 
 # 下载Lean源码

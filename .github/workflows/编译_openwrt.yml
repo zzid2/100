@@ -10,9 +10,9 @@
 # See /LICENSE for more information.
 #
 
-name: 编译OpenWrt                 ## Actions工作流的名称  GItHub搜索：OpenWrt-CI
+name: 编译OpenWrt                  ## Actions工作流的名称  GItHub搜索：OpenWrt-CI
 on:
-  # repository_dispatch:             ## 当收到外部事件触发时执行
+  # repository_dispatch:             ## 用于 “源码更新_定时校验” 的工作流更新时 触发此工作流。
   workflow_dispatch:               ## 手动触发工作流程_调度
     inputs:
       ssh:                         ## 做判断时用的ID名称（可更改）  
@@ -138,10 +138,24 @@ jobs:
         pwd && ls                                                                        # 显示当前步骤的路径和所有文件和文件夹；
         df -hT $PWD                                                                      # 显示当前磁盘使用情况
         
+        ## 字体颜色配置
+        print_error() {                           ## 打印红色字体
+        echo -e "\033[31m$1\033[0m"
+        }
+        
+        print_green() {                           ## 打印绿色字体
+        echo -e "\033[32m$1\033[0m"
+        }
+        
+        print_yellow() {                          ## 打印黄色字体
+        echo -e "\033[33m$1\033[0m"
+        }
+        
+        
         if [ -f "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini" ]; then      # 判断 如果机型目录内没有 settings.ini 文件, 移动DIY目录内的文件 并加载它。
-            echo "注意: 使用机型目录内的 settings.ini 文件"
+            print_green "注意: 使用机型目录内的 settings.ini 文件"
         else
-            echo "注意: 移动DIY目录下的 settings.ini 文件至机型目录内"
+            print_green "注意: 移动DIY目录下的 settings.ini 文件至机型目录内"
             mv ${GITHUB_WORKSPACE}/build/DIY/settings.ini ${GITHUB_WORKSPACE}/build/${{matrix.target}}
         fi
         source "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini"
@@ -240,17 +254,18 @@ jobs:
       run: |
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc                                                       ## 删除：sources.list.d 目录、dotnet 目录、android目录、ghc目录。
         sudo -E apt-get -qq update -y && sudo -E apt-get -qq upgrade -y && sudo -E apt-get -qq autoremove -y --purge && sudo -E apt-get -qq clean     ## 更新软件包引、安装软件包、删除无用软件包、清理 APT 缓存。
-        if [ -f "build/DIY/env" ];then
-            echo "注意: 使用"build/DIY/env"依赖文件"
-            sudo apt-get -y install $(awk '{print $1}' build/DIY/env)
+        sudo timedatectl set-timezone "$TZ"            ## 设置时区
+        sudo mkdir -p /workdir                         ## 在根目录下 新创建“workdir”目录，用于备份 openwrt 源码；
+        sudo chown $USER:$GROUPS /workdir              ## 提高“workdir”目录的权限
+        
+        if [ -f "build/DIY/env" ];then                 ## 安装环境文件env（自动去除"注释"信息）
+            print_green "注意: 使用"build/DIY/env"依赖文件"
+            sudo -E apt-get -qq install -y $(awk '{print $1}' build/DIY/env)
         else
-            echo "注意: 未找到"env"依赖文件"
+            print_error "错误: 未找到"env"依赖文件"
         fi
-        # sudo -E apt-get -qq install -y build-essential asciidoc binutils bzip2 gawk gettext git libc6-dev libncurses5 libtinfo-dev libtinfo5 ncurses-doc libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
-        sudo timedatectl set-timezone "$TZ"            # 设置时区
-        sudo mkdir -p /workdir                         # 在根目录下 新创建“workdir”目录，用于备份 openwrt 源码；
-        sudo chown $USER:$GROUPS /workdir              # 提高“workdir”目录的权限
-        sudo -E apt-get -qq install xz-utils btrfs-progs zip dosfstools uuid-runtime pigz         # N1固件打包必需要的依赖
+        
+        sudo -E apt-get -qq install -y xz-utils btrfs-progs zip dosfstools uuid-runtime pigz             ## N1固件打包必需要的依赖
         
         
         
@@ -303,9 +318,9 @@ jobs:
         cd openwrt                                                                                  # 后续执行命令默认进入：“openwrt”源码目录
         
         if [ -f "build/${{matrix.target}}/$DIY_P1_SH" ]; then                                       # 判断 如果机型目录内没有 diy-part1 脚本, 复制DIY目录内的脚本并 运行它。
-          echo "注意: 使用机型目录内的 diy-part1 脚本"
+          print_green "注意: 使用机型目录内的 diy-part1 脚本"
         else
-          echo "注意: 移动DIY目录下的 diy-part1 脚本至机型目录内"
+          print_green "注意: 移动DIY目录下的 diy-part1 脚本至机型目录内"
           mv build/DIY/$DIY_P1_SH build/${{matrix.target}}
         fi
         chmod +x build/${{matrix.target}}/$DIY_P1_SH
@@ -318,9 +333,9 @@ jobs:
         cd openwrt                           # 进入“openwrt”源码目录
         
         if [ -f "build/${{matrix.target}}/$DIY_P2_SH" ]; then                                       # 判断 如果机型目录内没有 diy-part2 脚本, 复制DIY目录内的脚本并 运行它。
-          echo "注意: 使用机型目录内的 diy-part2 脚本"
+          print_green "注意: 使用机型目录内的 diy-part2 脚本"
         else
-          echo "注意: 移动DIY目录下的 diy-part2 脚本至机型目录内"
+          print_green "注意: 移动DIY目录下的 diy-part2 脚本至机型目录内"
           mv build/DIY/$DIY_P2_SH build/${{matrix.target}}
         fi
         chmod +x build/${{matrix.target}}/$DIY_P2_SH
@@ -334,19 +349,19 @@ jobs:
             
             
         if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                       # 判断diy目录  优先复制机型目录内的diy目录，如果没有 再复制 build/DIY/diy 文件目录至 openwrt 源码内。 
-            echo "注意: 复制机型目录内的 diy目录 "
+            print_green "注意: 复制机型目录内的 diy目录 "
             cp -rf build/${{matrix.target}}/diy/* ./
         else
             if [ -d "build/DIY/diy" ]; then
                 cp -rf build/DIY/diy/* ./
             else
-                echo "错误: diy目录不存在"
+                print_error "错误: diy目录不存在"
             fi
         fi
             
             
         if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                     # 判断 openwrt/files目录  （-n 表示如果有非空字符文件（就是有文件字符），则执行 then 后面的命令）
-            echo "注意: 复制机型目录内的 files目录 "
+            print_green "注意: 复制机型目录内的 files目录 "
             cp -rf build/${{matrix.target}}/files files
             chmod -R 777 build/${{matrix.target}}/files/* ./
         else
@@ -354,7 +369,7 @@ jobs:
                 cp -rf build/DIY/files files
                 chmod -R 777 build/${{matrix.target}}/files/* ./
             else
-                echo "错误: files目录不存在"
+                print_error "错误: files目录不存在"
             fi
         fi
         
@@ -367,7 +382,7 @@ jobs:
             if [ -d "build/DIY/patches" ]; then
                 find "build/DIY/patches" -type f -name '*.patch' -print0 | sort -z | xargs -0 -I % sh -c 'cat "%" | patch -d "./" -p1 --forward --no-backup-if-mismatch'
             else
-                echo "错误: patches目录不存在"
+                print_error "错误: patches目录不存在"
             fi
         fi
             
@@ -458,7 +473,7 @@ jobs:
       run: |
         cd openwrt                               # 进入“openwrt”源码目录
         
-        echo -e "CPU线程数：$(($(nproc)+1))   进行全线程编译..."     # 显示当前CPU线程数
+        print_yellow -e "CPU线程数：$(($(nproc)+1))   进行全线程编译..."     # 显示当前CPU线程数
         make -j$(($(nproc)+1)) V=s || make -j1 V=s                    # 首选全速线程编译，如果报错 再进行单线程编译排查错误！
         
         
@@ -577,7 +592,7 @@ jobs:
             
             rm -rf $GITHUB_WORKSPACE/N1opt                                                                   ## 已打包完成，删除N1打包源码
         else
-            echo "***未选择N1机型，跳过打包步骤***"
+            print_yellow "***未选择N1机型，跳过打包步骤***"
             
         fi
         
