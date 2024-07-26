@@ -30,37 +30,28 @@ sed -i 's@.*CYXluq4wUazHjmCDBCqXF*@#&@g' package/lean/default-settings/files/zzz
 # 修改固件版本号 添加代码：LEDE build $(TZ=UTC-8 date "+%Y.%m.%d") 显示范例：LEDE build 2021.02.08 @ OpenWrt        说明：【LEDE=作者 + build=建造 + （UTC-8=字符编码 + date=时间格式）】
 sed -i "s/OpenWrt /LEDE build $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" package/lean/default-settings/files/zzz-default-settings
 
-
-
-
-
-
 # 修改 默认主题
 #sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
 #sed -i '/set luci.main.mediaurlbase=\/luci-static\/bootstrap/d' feeds/luci/themes/luci-theme-bootstrap/root/etc/uci-defaults/30_luci-theme-bootstrap   # 命令的结果是删除代码：set luci.main.mediaurlbase=/luci-static/bootstrap
 # sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile                                                                             # 取掉默认主题
 
 
-
-
-
-
 # echo '修改时区'
-# sed -i "s/'UTC'/'CST-8'\n          set system.@system[-1].zonename='Asia\/Shanghai'/g" package/base-files/files/bin/config_generate   # 把 UTC 时区改为：CST-8  并添加一行 'Asia\/Shanghai'
+sed -i "s/'UTC'/'CST-8'\n\t\tset system.@system[-1].zonename='Asia\/Shanghai'/g" package/base-files/files/bin/config_generate                 ## 把 UTC 时区改为：CST-8  并换行添加：set system.@system[-1].zonename='Asia/Shanghai'（ \t\tset = 用于对齐新插入的行）
+
+# 修改输出固件名称（参考：Lede-20240726-openwrt）
+# sed -i 's/IMG_PREFIX:=$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=Lede-$(shell date +%Y-%m-%d)-$(VERSION_DIST_SANITIZED)/g' include/image.mk
 
 
-# echo '集成diy目录'
-# ln -s ../../diy ./package/openwrt-packages
 
 
-# cpufreq # CPU性能调节
-# git clone https://github.com/openwrt-xiaomi/luci-app-cpufreq package/lean/luci-app-cpufreq    # 下载源码
+
+
+
+
+# git clone https://github.com/openwrt-xiaomi/luci-app-cpufreq package/otherapp/luci-app-cpufreq              # CPU性能调节（适用arm处理器）
 # sed -i 's/LUCI_DEPENDS.*/LUCI_DEPENDS:=\@\(arm\|\|aarch64\)/g' package/lean/luci-app-cpufreq/Makefile
-# sed -i 's/services/system/g' package/lean/luci-app-cpufreq/luasrc/controller/cpufreq.lua   # 把默认 services 修改为：system
-
-# 修改vssr的makefile
-# find package/*/ feeds/*/ -maxdepth 2 -path "*luci-app-vssr/Makefile" | xargs -i sed -i 's/shadowsocksr-libev-alt/shadowsocksr-libev-ssr-redir/g' {}
-# find package/*/ feeds/*/ -maxdepth 2 -path "*luci-app-vssr/Makefile" | xargs -i sed -i 's/shadowsocksr-libev-server/shadowsocksr-libev-ssr-server/g' {}
+# sed -i 's/services/system/g' package/lean/luci-app-cpufreq/luasrc/controller/cpufreq.lua                    # 把默认 services 修改为：system
 
 
 
@@ -68,14 +59,10 @@ sed -i "s/OpenWrt /LEDE build $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" package
 # 添加温度显示(By YYiiEt)   # 在703行  or "1"%>   后面添加代码；
 # sed -i 's/or "1"%>/or "1"%> ( <%=luci.sys.exec("expr `cat \/sys\/class\/thermal\/thermal_zone0\/temp` \/ 1000") or "?"%> \&#8451; ) /g' feeds/luci/modules/luci-mod-admin-full/luasrc/view/admin_status/index.htm
 
-# 修改固件生成名字,增加当天日期(by:左右）
-# sed -i 's/IMG_PREFIX:=$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=Draco-china-$(shell date +%Y%m%d)-$(VERSION_DIST_SANITIZED)/g' include/image.mk
 
 
-
-
-# 切换
-# sed -i 's/Lean/Snapshot/g' package/base-files/files/etc/banner
+# 主题
+# https://github.com/garypang13/luci-theme-edge        # Edge 带背景音乐
 
 
 # ----------------------无效的代码------------------------

@@ -99,7 +99,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [lede_x86]                ## ←编译指定机型 “就是文件夹名称”，多选用英文逗号隔开可以同时编译；
+        target: [lede_G-DOCK]                ## ←编译指定机型 “就是文件夹名称”，多选用英文逗号隔开可以同时编译；
         # 目前可以选机型：openwrt,lede_G-DOCK,lede_hiwifi_HC5861,lede_linksys_Wrt32x,lede_N1,lede_x86
 
     
@@ -238,11 +238,15 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive      ## 非交互模式
       run: |
-        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
-        sudo -E apt-get -qq update -y
-        sudo -E apt-get -qq install -y build-essential asciidoc binutils bzip2 gawk gettext git libc6-dev libncurses5 libtinfo-dev libtinfo5 ncurses-doc libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
-        sudo -E apt-get -qq autoremove -y --purge
-        sudo -E apt-get -qq clean -y
+        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc                                                       ## 删除：sources.list.d 目录、dotnet 目录、android目录、ghc目录。
+        sudo -E apt-get -qq update -y && sudo -E apt-get -qq upgrade -y && sudo -E apt-get -qq autoremove -y --purge && sudo -E apt-get -qq clean     ## 更新软件包引、安装软件包、删除无用软件包、清理 APT 缓存。
+        if [ -f "build/DIY/env" ];then
+            echo "注意: 使用"build/DIY/env"依赖文件"
+            sudo apt-get -y install $(awk '{print $1}' build/DIY/env)
+        else
+            echo "注意: 未找到"env"依赖文件"
+        fi
+        # sudo -E apt-get -qq install -y build-essential asciidoc binutils bzip2 gawk gettext git libc6-dev libncurses5 libtinfo-dev libtinfo5 ncurses-doc libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
         sudo timedatectl set-timezone "$TZ"            # 设置时区
         sudo mkdir -p /workdir                         # 在根目录下 新创建“workdir”目录，用于备份 openwrt 源码；
         sudo chown $USER:$GROUPS /workdir              # 提高“workdir”目录的权限
@@ -523,8 +527,8 @@ jobs:
                 cd ../
                 echo "firmware_$x=$filename" >> $GITHUB_ENV
             done
-            cd ../../
-            mv -f reform/out/*/*.img.gz openwrt/bin/targets/armvirt/*                                        # 移动N1机型固件到默认bin目录下
+                cd ../../
+                mv -f reform/out/*/*.img.gz openwrt/bin/targets/armvirt/*                                        # 移动N1机型固件到默认bin目录下
         fi
         
         
