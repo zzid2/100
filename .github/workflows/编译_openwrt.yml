@@ -12,7 +12,7 @@
 
 name: 编译OpenWrt                  ## Actions工作流的名称  GItHub搜索：OpenWrt-CI
 on:
-  # repository_dispatch:             ## 用于 “源码更新_定时校验” 的工作流更新时 触发此工作流。
+  # repository_dispatch:             ## “源码更新_定时校验” 的工作流有更新时 触发此编译工作流。
   workflow_dispatch:               ## 手动触发工作流程_调度
     inputs:
       ssh:                         ## 做判断时用的ID名称（可更改）  
@@ -86,8 +86,10 @@ env:
   Author: ${{github.actor}}                              ## 提取 Github用户ID，如：zuoweiid
   GITURL: https://github.com/${{github.repository}}      ## 提取 项目仓库地址 = https://github.com +（用户ID + 项目仓库名字），如：zuoweiid/10    ${{github.repository}}=当前仓库
   Run_number: ${{github.run_number}}                     ## 提取 Actions当前运行编号，如#12
-
-
+  RED="\033[31m"                         ## 输出红色
+  GREEN="\033[32m"                       ## 输出绿色
+  YELLOW="\033[33m"                      ## 输出黄色
+  RESET="\033[0m"                        ## 重置颜色
 
 jobs:
   build:                                  ## 运行脚本的备注名称（可更改）
@@ -138,24 +140,11 @@ jobs:
         pwd && ls                                                                        # 显示当前步骤的路径和所有文件和文件夹；
         df -hT $PWD                                                                      # 显示当前磁盘使用情况
         
-        ## 字体颜色配置
-        print_error() {                           ## 打印红色字体
-            echo -e "\033[31m$1\033[0m"
-        }
-        
-        print_green() {                           ## 打印绿色字体
-            echo -e "\033[32m$1\033[0m"
-        }
-        
-        print_yellow() {                          ## 打印黄色字体
-            echo -e "\033[33m$1\033[0m"
-        }
-        
-        
+        ## 加载settings.ini配置文件
         if [ -f "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini" ]; then      # 判断 如果机型目录内没有 settings.ini 文件, 移动DIY目录内的文件 并加载它。
-            print_green "注意: 使用机型目录内的 settings.ini 文件"
+            echo "注意: 使用机型目录内的 settings.ini 文件"
         else
-            print_green "注意: 移动DIY目录下的 settings.ini 文件至机型目录内"
+            echo "注意: 移动DIY目录下的 settings.ini 文件至机型目录内"
             mv ${GITHUB_WORKSPACE}/build/DIY/settings.ini ${GITHUB_WORKSPACE}/build/${{matrix.target}}
         fi
         source "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini"
@@ -259,10 +248,10 @@ jobs:
         sudo chown $USER:$GROUPS /workdir              ## 提高“workdir”目录的权限
         
         if [ -f "build/DIY/env" ];then                 ## 安装环境文件env（自动去除"注释"信息）
-            print_green "注意: 使用"build/DIY/env"依赖文件"
+            echo -e "${GREEN}注意: 使用"build/DIY/env"依赖文件${RESET}"
             sudo -E apt-get -qq install -y $(awk '{print $1}' build/DIY/env)
         else
-            print_error "错误: 未找到"env"依赖文件"
+            echo -e "${RED}错误: 未找到"env"依赖文件${RESET}"
         fi
         
         sudo -E apt-get -qq install -y xz-utils btrfs-progs zip dosfstools uuid-runtime pigz             ## N1固件打包必需要的依赖
@@ -318,9 +307,9 @@ jobs:
         cd openwrt                                                                                  # 后续执行命令默认进入：“openwrt”源码目录
         
         if [ -f "build/${{matrix.target}}/$DIY_P1_SH" ]; then                                       # 判断 如果机型目录内没有 diy-part1 脚本, 复制DIY目录内的脚本并 运行它。
-          print_green "注意: 使用机型目录内的 diy-part1 脚本"
+          echo "注意: 使用机型目录内的 diy-part1 脚本"
         else
-          print_green "注意: 移动DIY目录下的 diy-part1 脚本至机型目录内"
+          echo "注意: 移动DIY目录下的 diy-part1 脚本至机型目录内"
           mv build/DIY/$DIY_P1_SH build/${{matrix.target}}
         fi
         chmod +x build/${{matrix.target}}/$DIY_P1_SH
@@ -333,9 +322,9 @@ jobs:
         cd openwrt                           # 进入“openwrt”源码目录
         
         if [ -f "build/${{matrix.target}}/$DIY_P2_SH" ]; then                                       # 判断 如果机型目录内没有 diy-part2 脚本, 复制DIY目录内的脚本并 运行它。
-          print_green "注意: 使用机型目录内的 diy-part2 脚本"
+          echo "注意: 使用机型目录内的 diy-part2 脚本"
         else
-          print_green "注意: 移动DIY目录下的 diy-part2 脚本至机型目录内"
+          echo "注意: 移动DIY目录下的 diy-part2 脚本至机型目录内"
           mv build/DIY/$DIY_P2_SH build/${{matrix.target}}
         fi
         chmod +x build/${{matrix.target}}/$DIY_P2_SH
@@ -349,19 +338,19 @@ jobs:
             
             
         if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                       # 判断diy目录  优先复制机型目录内的diy目录，如果没有 再复制 build/DIY/diy 文件目录至 openwrt 源码内。 
-            print_green "注意: 复制机型目录内的 diy目录 "
+            echo "注意: 复制机型目录内的 diy目录 "
             cp -rf build/${{matrix.target}}/diy/* ./
         else
             if [ -d "build/DIY/diy" ]; then
                 cp -rf build/DIY/diy/* ./
             else
-                print_error "错误: diy目录不存在"
+                echo -e "${RED}错误: diy目录不存在${RESET}"
             fi
         fi
             
             
         if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                     # 判断 openwrt/files目录  （-n 表示如果有非空字符文件（就是有文件字符），则执行 then 后面的命令）
-            print_green "注意: 复制机型目录内的 files目录 "
+            echo "注意: 复制机型目录内的 files目录 "
             cp -rf build/${{matrix.target}}/files files
             chmod -R 777 build/${{matrix.target}}/files/* ./
         else
@@ -369,7 +358,7 @@ jobs:
                 cp -rf build/DIY/files files
                 chmod -R 777 build/${{matrix.target}}/files/* ./
             else
-                print_error "错误: files目录不存在"
+                echo -e "${RED}错误: files目录不存在${RESET}"
             fi
         fi
         
@@ -382,7 +371,7 @@ jobs:
             if [ -d "build/DIY/patches" ]; then
                 find "build/DIY/patches" -type f -name '*.patch' -print0 | sort -z | xargs -0 -I % sh -c 'cat "%" | patch -d "./" -p1 --forward --no-backup-if-mismatch'
             else
-                print_error "错误: patches目录不存在"
+                echo -e "${RED}错误: patches目录不存在${RESET}"
             fi
         fi
             
@@ -473,7 +462,7 @@ jobs:
       run: |
         cd openwrt                               # 进入“openwrt”源码目录
         
-        print_yellow -e "CPU线程数：$(($(nproc)+1))   进行全线程编译..."     # 显示当前CPU线程数
+        echo -e "CPU线程数：$(($(nproc)+1))   进行全线程编译..."     # 显示当前CPU线程数
         make -j$(($(nproc)+1)) V=s || make -j1 V=s                    # 首选全速线程编译，如果报错 再进行单线程编译排查错误！
         
         
@@ -592,7 +581,7 @@ jobs:
             
             rm -rf $GITHUB_WORKSPACE/N1opt                                                                   ## 已打包完成，删除N1打包源码
         else
-            print_yellow "***未选择N1机型，跳过打包步骤***"
+            echo "***未选择N1机型，跳过打包步骤***"
             
         fi
         
