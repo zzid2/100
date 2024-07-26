@@ -24,15 +24,21 @@ sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
 sed -i 's@.*CYXluq4wUazHjmCDBCqXF*@#&@g' package/lean/default-settings/files/zzz-default-settings
 
 # 修改主机名（不能纯数字或者中文）
-# sed -i '/uci commit system/i\uci set system.@system[0].hostname='OpenWrt'' package/lean/default-settings/files/zzz-default-settings
+# sed -i 's/OpenWrt/G-DOCK/g' package/base-files/files/bin/config_generate                                                                    ## 把初始默认的“OpenWrt” 修改为：G-DOCK
+# sed -i '/uci commit system/i\uci set system.@system[0].hostname='OpenWrtx86'' package/lean/default-settings/files/zzz-default-settings      ## 再初始默认基础上修改为：OpenWrtx86
 
-# 修改固件版本号 说明：LEDE build $(TZ=UTC-8 date "+%Y.%m.%d") 显示范例： LEDE build 2021.02.08 @ 说明：【LEDE=作者 + build=建造 + （UTC-8=字符编码 + date=时间格式）】
+# 修改固件版本号 添加代码：LEDE build $(TZ=UTC-8 date "+%Y.%m.%d") 显示范例：LEDE build 2021.02.08 @ OpenWrt        说明：【LEDE=作者 + build=建造 + （UTC-8=字符编码 + date=时间格式）】
 sed -i "s/OpenWrt /LEDE build $(TZ=UTC-8 date "+%Y.%m.%d") @ OpenWrt /g" package/lean/default-settings/files/zzz-default-settings
 
+
+
+
+
+
 # 修改 默认主题
-sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
-# sed -i '/set luci.main.mediaurlbase=\/luci-static\/bootstrap/d' feeds/luci/themes/luci-theme-bootstrap/root/etc/uci-defaults/30_luci-theme-bootstrap   # 删除代码：set luci.main.mediaurlbase=/luci-static/bootstrap
-# sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile   # 取掉默认主题
+#sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
+#sed -i '/set luci.main.mediaurlbase=\/luci-static\/bootstrap/d' feeds/luci/themes/luci-theme-bootstrap/root/etc/uci-defaults/30_luci-theme-bootstrap   # 命令的结果是删除代码：set luci.main.mediaurlbase=/luci-static/bootstrap
+# sed -i 's/ +luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile                                                                             # 取掉默认主题
 
 
 
@@ -66,15 +72,16 @@ sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/M
 # sed -i 's/IMG_PREFIX:=$(VERSION_DIST_SANITIZED)/IMG_PREFIX:=Draco-china-$(shell date +%Y%m%d)-$(VERSION_DIST_SANITIZED)/g' include/image.mk
 
 
-# 修改版本号
-# sed -i 's/V2020/V$(date "+%Y.%m.%d")/g' package/lean/default-settings/files/zzz-default-settings
+
 
 # 切换
 # sed -i 's/Lean/Snapshot/g' package/base-files/files/etc/banner
 
-# 修改版本号
-# sed -i 's/V2020/V${{ env.DATE }}/g' package/base-files/files/etc/banner
 
+# ----------------------无效的代码------------------------
+# 修改版本号
+# sed -i 's/V2020/V$(date "+%Y.%m.%d")/g' package/lean/default-settings/files/zzz-default-settings                  # 修改版本号 将文件中所有的 V2020 替换为当前日期，格式为 YYYY.MM.DD。
+# sed -i 's/V2020/V2024/g' package/base-files/files/etc/banner
 
 
 

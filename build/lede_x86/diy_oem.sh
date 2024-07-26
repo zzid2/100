@@ -12,6 +12,3 @@ cd $lede_path                            ## 进入（Lede目录）内并执行�
     # echo "注意：不存在主机名，插入新名称"
     # sed -i "/uci commit system/i\\$hostname_line" "$file"
 # fi
-
-# 修改机器名称
-# sed -i 's/OpenWrt/G-DOCK/g' package/base-files/files/bin/config_generate   # 把默认 OpenWrt 修改为：G-DOCK
