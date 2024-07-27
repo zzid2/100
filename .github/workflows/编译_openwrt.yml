@@ -86,10 +86,8 @@ env:
   Author: ${{github.actor}}                              ## 提取 Github用户ID，如：zuoweiid
   GITURL: https://github.com/${{github.repository}}      ## 提取 项目仓库地址 = https://github.com +（用户ID + 项目仓库名字），如：zuoweiid/10    ${{github.repository}}=当前仓库
   Run_number: ${{github.run_number}}                     ## 提取 Actions当前运行编号，如#12
-  RED: "\033[31m"                         ## 输出红色
-  GREEN: "\033[32m"                       ## 输出绿色
-  YELLOW: "\033[33m"                      ## 输出黄色
-  RESET: "\033[0m"                        ## 重置颜色
+
+
 
 jobs:
   build:                                  ## 运行脚本的备注名称（可更改）
@@ -101,7 +99,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [lede_G-DOCK]                ## ←编译指定机型 “就是文件夹名称”，多选用英文逗号隔开可以同时编译；
+        target: [lede_G-DOCK,lede_N1,lede_x86]                ## ←编译指定机型 “就是文件夹名称”，多选用英文逗号隔开可以同时编译；
         # 目前可以选机型：openwrt,lede_G-DOCK,lede_hiwifi_HC5861,lede_linksys_Wrt32x,lede_N1,lede_x86
 
     
@@ -248,10 +246,10 @@ jobs:
         sudo chown $USER:$GROUPS /workdir              ## 提高“workdir”目录的权限
         
         if [ -f "build/DIY/env" ];then                 ## 安装环境文件env（自动去除"注释"信息）
-            echo -e "${GREEN}注意: 使用"build/DIY/env"依赖文件${RESET}"
+            echo "注意: 使用"build/DIY/env"依赖文件"
             sudo -E apt-get -qq install -y $(awk '{print $1}' build/DIY/env)
         else
-            echo -e "${RED}错误: 未找到"env"依赖文件${RESET}"
+            echo "错误: 未找到"env"依赖文件"
         fi
         
         sudo -E apt-get -qq install -y xz-utils btrfs-progs zip dosfstools uuid-runtime pigz             ## N1固件打包必需要的依赖
@@ -344,7 +342,7 @@ jobs:
             if [ -d "build/DIY/diy" ]; then
                 cp -rf build/DIY/diy/* ./
             else
-                echo -e "${RED}错误: diy目录不存在${RESET}"
+                echo "错误: diy目录不存在"
             fi
         fi
             
@@ -358,7 +356,7 @@ jobs:
                 cp -rf build/DIY/files files
                 chmod -R 777 build/${{matrix.target}}/files/* ./
             else
-                echo -e "${RED}错误: files目录不存在${RESET}"
+                echo "错误: files目录不存在"
             fi
         fi
         
@@ -371,7 +369,7 @@ jobs:
             if [ -d "build/DIY/patches" ]; then
                 find "build/DIY/patches" -type f -name '*.patch' -print0 | sort -z | xargs -0 -I % sh -c 'cat "%" | patch -d "./" -p1 --forward --no-backup-if-mismatch'
             else
-                echo -e "${RED}错误: patches目录不存在${RESET}"
+                echo "错误: patches目录不存在"
             fi
         fi
             
