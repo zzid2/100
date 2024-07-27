@@ -142,7 +142,7 @@ jobs:
         if [ -f "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini" ]; then      # 判断 如果机型目录内没有 settings.ini 文件, 移动DIY目录内的文件 并加载它。
             echo "注意: 使用机型目录内的 settings.ini 文件"
         else
-            echo "注意: 移动DIY目录下的 settings.ini 文件至机型目录内"
+            echo "注意: 移动"settings.ini"文件；DIY目录下 移至机型目录内"
             mv ${GITHUB_WORKSPACE}/build/DIY/settings.ini ${GITHUB_WORKSPACE}/build/${{matrix.target}}
         fi
         source "${GITHUB_WORKSPACE}/build/${{matrix.target}}/settings.ini"
@@ -167,6 +167,7 @@ jobs:
         echo "CangKu=${GITURL##*${Author}/}" >> $GITHUB_ENV                              # = 项目仓库名称的变量
         echo "date=$(date "+%Y.%m.%d-%H%M")" >> $GITHUB_ENV                              # = date 变量时间格式: 2021.01.02-1310   上传至github空间的格式，发布固件到 左侧标签的格式，（Tags左侧标签时间格式）
         echo "date1=$(date "+%Y年%m月%d号-%H点%M分")" >> $GITHUB_ENV                    # = date1 变量时间格式: 2021年01月02号-13点10分 （Releases主页发布固件名称）
+        echo "$(date +%s)" > start_time.txt                                              ## 启动时间 写入到“start_time.txt”文本中（与结尾“end_time.txt”文本对应）
         
         ## 源码的变量
         if [ $REPO_URL == "https://github.com/coolsnowwolf/lede" ]; then                 # 当使用Lede源码时      变量：NAME2=Lede   ZUOZHE=lean
@@ -187,29 +188,7 @@ jobs:
         echo "LANG=zh_CN.UTF-8" >> $GITHUB_ENV                                           # 加入中文语言包 的变量，会持续显示中文语言；
         
         
-        
-    - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
-      uses: xhnmt/pushplus-action@v1.0.0  ## 加载执行仓库：hhttps://github.com/xhnmt/pushplus-action
-      continue-on-error: true             ## 出错时继续执行编译
-      if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')      ## 判断 SERVERCHAN_SCKEY 变量为“开启”则运行，否则跳过；继续判断 工作流调度菜单为 wxtz 时“开启”运行，否则跳过；
-      with:
-        token: ${{ secrets.SCKEY }}
-        title: "编译[${{matrix.target}}]_${{env.CangKu}}仓库_#${{env.Run_number}}"
-        content: "
-              
-              仓库名称：${{env.CangKu}}
-              
-              
-              工作流号：#${{env.Run_number}}
-              
-              
-              固件名称：${{matrix.target}}
-              
-              
-              触发时间：${{env.date1}}"
-              
-              
-              
+
 ## https://github.com/josStorer/get-current-time            获取当前时间
 ## https://github.com/marketplace/actions/pushplus-action
 ## https://github.com/xhnmt/pushplus-action
@@ -322,7 +301,7 @@ jobs:
         if [ -f "build/${{matrix.target}}/$DIY_P2_SH" ]; then                                       # 判断 如果机型目录内没有 diy-part2 脚本, 复制DIY目录内的脚本并 运行它。
           echo "注意: 使用机型目录内的 diy-part2 脚本"
         else
-          echo "注意: 移动DIY目录下的 diy-part2 脚本至机型目录内"
+          echo "注意: 移动 diy-part2 脚本,DIY目录 移至机型目录内"
           mv build/DIY/$DIY_P2_SH build/${{matrix.target}}
         fi
         chmod +x build/${{matrix.target}}/$DIY_P2_SH
@@ -336,7 +315,7 @@ jobs:
             
             
         if [ -n "$(ls -A "build/${{matrix.target}}/diy" 2>/dev/null)" ]; then                       # 判断diy目录  优先复制机型目录内的diy目录，如果没有 再复制 build/DIY/diy 文件目录至 openwrt 源码内。 
-            echo "注意: 复制机型目录内的 diy目录 "
+            echo "注意: 复制 diy目录 "
             cp -rf build/${{matrix.target}}/diy/* ./
         else
             if [ -d "build/DIY/diy" ]; then
@@ -348,7 +327,7 @@ jobs:
             
             
         if [ -n "$(ls -A "build/${{matrix.target}}/files" 2>/dev/null)" ]; then                     # 判断 openwrt/files目录  （-n 表示如果有非空字符文件（就是有文件字符），则执行 then 后面的命令）
-            echo "注意: 复制机型目录内的 files目录 "
+            echo "注意: 复制 files目录 "
             cp -rf build/${{matrix.target}}/files files
             chmod -R 777 build/${{matrix.target}}/files/* ./
         else
@@ -735,6 +714,8 @@ jobs:
         files: ${{ env.FIRMWARE }}/*         ## 上传生成的所有固件
         
         
+
+        
         
     - name: 删除工作流运行                            ## Delete workflow runs
       uses: Mattraks/delete-workflow-runs@main        ## GitRML/delete-workflow-runs@v2 已经停更     改为： https://github.com/Mattraks/delete-workflow-runs
@@ -797,3 +778,41 @@ jobs:
         [ steps.compile.outputs.status == 'success' ] && curl -k --data chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" --data "text=🎉 OpenWrt ${{ env.date3 }} ${{matrix.target}} 编译成功 😋  https://op.supes.top/firmware/${{matrix.target}}/  ${{ env.COWURL }}   ${{ env.WETRANS }} 🚀" "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" || curl -k --data chat_id="${{ secrets.TELEGRAM_TO }}" --data "text=❌ OpenWrt ${{ env.date3 }} ${{matrix.target}} 编译失败 😂" "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage"
 
 
+        
+    - name: 计算总运行时长
+      run : |
+        # 计算运行时长必要的依赖工具（bc awk）
+        
+        echo "$(date +%s)" > end_time.txt                   ## 结束时间 写入到“end_time.txt”文本中（与开头“start_time.txt”文本对应）
+        ELAPSED_MINUTES=$(awk -v start=$(cat start_time.txt) -v end=$(cat end_time.txt) 'BEGIN { elapsed = end - start; printf "%.2f", elapsed / 60 }')         ## = ELAPSED_MINUTES变量：计算运行时间，并保留两位小数点和保留前面有0
+        echo "ELAPSED_MINUTES=$ELAPSED_MINUTES" >> $GITHUB_ENV                                                                                                  ## 总运行时间（分钟）写入变量： ELAPSED_MINUTES    ELAPSED_TIME
+        
+        
+        
+    - name: 准备编译_微信通知             ## Github设置里需添微信SCKEY
+      uses: xhnmt/pushplus-action@v1.0.0  ## 加载执行仓库：hhttps://github.com/xhnmt/pushplus-action
+      continue-on-error: true             ## 出错时继续执行编译
+      if: env.SERVERCHAN_SCKEY == 'true' || (github.event.inputs.wxtz == 'wxtz' && github.event.inputs.wxtz  != 'false')      ## 判断 SERVERCHAN_SCKEY 变量为“开启”则运行，否则跳过；继续判断 工作流调度菜单为 wxtz 时“开启”运行，否则跳过；
+      with:
+        token: ${{ secrets.SCKEY }}
+        title: "编译[${{matrix.target}}]_${{env.CangKu}}仓库_#${{env.Run_number}}"
+        content: "
+              
+              仓库名称：${{env.CangKu}}
+              
+              
+              工作流号：#${{env.Run_number}}
+              
+              
+              固件名称：${{matrix.target}}
+              
+              
+              启动时间：${{ env.date1 }}
+              
+              运行时间：全程用时 ${{ env.ELAPSED_MINUTES }} 分钟
+              
+              
+              "
+              ## 结尾
+              
+              
