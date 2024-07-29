@@ -78,14 +78,14 @@ on:
 
 
 env:
-  TZ: Asia/Shanghai                      ## 时区设置
+  Author: ${{github.actor}}                              ## Github用户ID，如：zuoweiid
+  Run_number: ${{github.run_number}}                     ## 当前运行工作流编号，如#12
+  GITURL: https://github.com/${{github.repository}}      ## 当前项目仓库ID = https://github.com +（用户ID + 项目仓库名字），结果：https://github.com/zuoweiid/10    ${{github.repository}}=当前仓库
   REPO_TOKEN: ${{ secrets.REPO_TOKEN }}  ## REPO_TOKEN === GitHub令牌密钥（用于发布固件）
   SCKEY: ${{ secrets.SCKEY }}            ## SCKEY      === 推送ID密钥    （用于微信推送）
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}      ## TELEGRAM_CHAT_ID   === TG电报群令牌
   TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}  ## TELEGRAM_BOT_TOKEN === TG电报群密钥
-  Author: ${{github.actor}}                              ## 提取 Github用户ID，如：zuoweiid
-  GITURL: https://github.com/${{github.repository}}      ## 提取 项目仓库地址 = https://github.com +（用户ID + 项目仓库名字），如：zuoweiid/10    ${{github.repository}}=当前仓库
-  Run_number: ${{github.run_number}}                     ## 提取 Actions当前运行编号，如#12
+  TZ: Asia/Shanghai                                      ## 时区设置为上海
 
 
 
@@ -220,7 +220,7 @@ jobs:
       run: |
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc                                                       ## 删除：sources.list.d 目录、dotnet 目录、android目录、ghc目录。
         sudo -E apt-get -qq update -y && sudo -E apt-get -qq upgrade -y && sudo -E apt-get -qq autoremove -y --purge && sudo -E apt-get -qq clean     ## 更新软件包引、安装软件包、删除无用软件包、清理 APT 缓存。
-        sudo timedatectl set-timezone "$TZ"            ## 设置时区
+        sudo timedatectl set-timezone "$TZ"            ## 设置时区为上海
         sudo mkdir -p /workdir                         ## 在根目录下 新创建“workdir”目录，用于备份 openwrt 源码；
         sudo chown $USER:$GROUPS /workdir              ## 提高“workdir”目录的权限
         
@@ -808,6 +808,7 @@ jobs:
               
               
               启动时间：${{ env.date1 }}
+              
               
               运行时间：全程用时 ${{ env.ELAPSED_MINUTES }} 分钟
               
